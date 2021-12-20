@@ -84,15 +84,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\programation\C++\Game Engine\Libraries\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\axel\programation\C++\Libraries\include;E:\programation\C++\Game Engine\Libraries\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>E:\programation\C++\Game Engine\Libraries\lib;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>E:\programation\C++\Game Engine\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\axel\programation\C++\Libraries\lib;E:\programation\C++\Game Engine\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>E:\programation\C++\Libraries\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\axel\programation\C++\Libraries\include;E:\programation\C++\Libraries\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
-    <LibraryPath>E:\programation\C++\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\axel\programation\C++\Libraries\lib;E:\programation\C++\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
