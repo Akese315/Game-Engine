@@ -5,10 +5,13 @@ Vertex::Vertex(Device *deviceObj, SwapChain* swapchainObj) {
 	this->swapchainObj = swapchainObj;
 
 	//initialition : Les buffers de verticies et d'index sont créer mais attendent que le commandBuffer les demande.
+	createDescriptorSetLayout();
 	createVertexBuffer();
 	createIndexBuffer();
 	createUniformBuffers();
 	createDescriptorPool();
+	createDescriptorSets();
+	
 }
 
 
@@ -133,20 +136,12 @@ void Vertex::createDescriptorSetLayout()
 	layoutInfo.bindingCount = 1;
 	layoutInfo.pBindings = &uboLayoutBinding;
 
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
-
 
 	VkResult result = vkCreateDescriptorSetLayout(this->deviceObj->getDevice(), &layoutInfo, nullptr, &descriptorSetLayout);
 	if (result != VK_SUCCESS)
 	{	
 		Log::error("Failed to create Descriptor set Layout.", result);
 	}
-
-	VkDescriptorSetLayout descriptorSetLayout;
-	VkPipelineLayout pipelineLayout;
 
 }
 void Vertex::createUniformBuffers()
@@ -260,9 +255,9 @@ vector<uint16_t> Vertex::getIndices()
 	return indices;
 }
 
-VkPipelineLayout Vertex::getPipelineLayout()
+VkDescriptorSetLayout* Vertex::getDescriptorSetLayout()
 {
-	return pipelineLayout;
+	return &descriptorSetLayout;
 }
 
 vector<VkDescriptorSet> Vertex::getDescriptorSet()
@@ -272,10 +267,12 @@ vector<VkDescriptorSet> Vertex::getDescriptorSet()
 
 void Vertex::recreateVertexObj()
 {
+	createDescriptorSetLayout();
 	createVertexBuffer();
 	createIndexBuffer();
 	createUniformBuffers();
 	createDescriptorPool();
+	createDescriptorSets();
 }
 
 void Vertex::cleanUp()

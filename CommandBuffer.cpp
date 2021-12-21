@@ -113,14 +113,16 @@ void CommandBuffer::commandBufferLoad()
 		renderPassInfo.renderArea.extent	= *extent;
 
 		vkCmdBeginRenderPass(_commandBuffer[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getPipeline());
+		vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getGraphicsPipeline());
 		VkBuffer vertexBuffers[] = { vertexObj->getVertexBuffer().buffer };
 		VkBuffer indexBuffer[] = { vertexObj->getIndexBuffer().buffer };
 		vector<uint16_t> indices = vertexObj->getIndices();
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, vertexBuffers,	offsets);
 		vkCmdBindIndexBuffer(_commandBuffer[i], *indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-		vkCmdBindDescriptorSets(_commandBuffer[i],VK_PIPELINE_BIND_POINT_GRAPHICS, vertexObj->getPipelineLayout(), 0, 1, &descriptorSetList[i], 0, nullptr);
+		
+		cout << &descriptorSetList[i] << endl;
+		vkCmdBindDescriptorSets(_commandBuffer[i],VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getPipelineLayout(), 0, 1, &descriptorSetList[i], 0, nullptr);
 		vkCmdDrawIndexed(_commandBuffer[i],static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 		vkCmdEndRenderPass(_commandBuffer[i]);
 

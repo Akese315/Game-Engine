@@ -250,7 +250,7 @@ void window_engine::swapChainDeInit()
 
 void window_engine::PipelineInit()
 {
-	renderer = new vulkan_render(this->deviceObj, &_swapchainExtent, swapchainObj);
+	renderer = new vulkan_render(this->deviceObj, &_swapchainExtent, swapchainObj, VertexObj);
 	
 	
 }

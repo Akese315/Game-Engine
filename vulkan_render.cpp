@@ -1,11 +1,11 @@
 #include "vulkan_render.h"
 
-vulkan_render::vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain)
+vulkan_render::vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain, Vertex* vertex)
 {
 	this->swapchain		= swapchain;
 	this->extent		= extent;
 	this->device		= device;
-
+	this->vertexObj		= vertex;
 
 	init();
 	
@@ -218,8 +218,8 @@ void vulkan_render::createPipelineLayout()
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount			= 0; // Optionel
-	pipelineLayoutInfo.pSetLayouts				= nullptr; // Optionel
+	pipelineLayoutInfo.setLayoutCount			= 1; // Optionel
+	pipelineLayoutInfo.pSetLayouts				= vertexObj->getDescriptorSetLayout(); // Optionel
 	pipelineLayoutInfo.pushConstantRangeCount	= 0; // Optionel
 	pipelineLayoutInfo.pPushConstantRanges		= nullptr; // Optionel	
 
@@ -311,11 +311,14 @@ VkRenderPass vulkan_render::getRenderPass()
 }
 
 
-VkPipeline vulkan_render::getPipeline()
+VkPipeline vulkan_render::getGraphicsPipeline()
 {
 	return _graphicsPipeline;
 }
-
+VkPipelineLayout vulkan_render::getPipelineLayout()
+{
+	return _pipelineLayout;
+}
 
 vulkan_render::~vulkan_render()
 {	

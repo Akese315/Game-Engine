@@ -25,11 +25,7 @@ public:
 		VkDeviceSize size;
 
 	};
-
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
-	vector<VkBuffer> uniformBuffers;
-	vector<VkDeviceMemory> uniformBuffersMemory;
+	
 
 
 	//C'est une structure qui permet de rassembler le stagging buffer et le buffer
@@ -44,7 +40,7 @@ public:
 	bufferStruct& getVertexBuffer();
 	bufferStruct& getIndexBuffer();
 	vector<VkDescriptorSet> getDescriptorSet();
-	VkPipelineLayout getPipelineLayout();
+	VkDescriptorSetLayout* getDescriptorSetLayout();
 	vector<uint16_t> getIndices();
 	static VkVertexInputBindingDescription getBindingDescription();
 	static array<VkVertexInputAttributeDescription, 2>	getAttributeDescriptions();
@@ -56,10 +52,10 @@ private:
 	Device* deviceObj;
 	SwapChain* swapchainObj;
 	VkDescriptorSetLayout descriptorSetLayout;
-	VkPipelineLayout pipelineLayout;
 	VkDescriptorPool descriptorPool;
 	vector<VkDescriptorSet> descriptorSets;
-	
+	vector<VkBuffer> uniformBuffers;
+	vector<VkDeviceMemory> uniformBuffersMemory;
 
 
 	struct vertexStruc
