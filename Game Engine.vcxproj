@@ -84,9 +84,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\programation\C++\Game Engine\Libraries\include;$(IncludePath)</IncludePath>
-    <ExternalIncludePath>E:\programation\C++\Game Engine\Libraries\lib;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>E:\programation\C++\Game Engine\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\programation\C++\Libraries\include;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>E:\programation\C++\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
