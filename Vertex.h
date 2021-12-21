@@ -70,7 +70,7 @@ private:
 
 	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void createVertexBuffer();
-
+	void createDescriptorSetLayout();
 	void createIndexBuffer();
 	
 	

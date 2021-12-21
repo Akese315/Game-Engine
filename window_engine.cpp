@@ -79,7 +79,7 @@ void window_engine::drawFrame()
 	VkResult result = vkWaitForFences(deviceObj->getDevice(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 	uint32_t imageIndex;
 	result = vkAcquireNextImageKHR(deviceObj->getDevice(), swapchainObj->getSwapChain(), UINT64_MAX, _imageAvailableSemaphore[_currentFrame], VK_NULL_HANDLE, &imageIndex);
-
+	// this function get the next image
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		Log::error("trop de temps", result);
 		WindowResized();
@@ -143,6 +143,8 @@ void window_engine::drawFrame()
 	else if (result != VK_SUCCESS) {
 		Log::error("failed to present swap chain image!",result);
 	}
+
+	//ALL FAILED TO PRESENT THE IMAGE
 
 	_currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }

@@ -113,6 +113,17 @@ void Vertex::createIndexBuffer()
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBufferStruct.buffer,
 			indexBufferStruct.Memory);
 }
+
+void Vertex::createDescriptorSetLayout()
+{
+	VkDescriptorSetLayoutBinding uboLayoutBinding{};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; 
+	uboLayoutBinding.pImmutableSamplers = nullptr;
+
+}
 Vertex::bufferStruct& Vertex::getVertexBuffer()
 {
 	return vertexBufferStruct;
