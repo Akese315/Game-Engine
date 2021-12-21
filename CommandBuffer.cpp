@@ -84,6 +84,9 @@ void CommandBuffer::createCommandBuffer()
 }
 void CommandBuffer::commandBufferLoad()
 {
+
+	vector<VkDescriptorSet> descriptorSetList = vertexObj->getDescriptorSet();
+
 	for (size_t i = 0; i < _commandBuffer.size(); i++)
 	{
 
@@ -117,6 +120,7 @@ void CommandBuffer::commandBufferLoad()
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, vertexBuffers,	offsets);
 		vkCmdBindIndexBuffer(_commandBuffer[i], *indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindDescriptorSets(_commandBuffer[i],VK_PIPELINE_BIND_POINT_GRAPHICS, vertexObj->getPipelineLayout(), 0, 1, &descriptorSetList[i], 0, nullptr);
 		vkCmdDrawIndexed(_commandBuffer[i],static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 		vkCmdEndRenderPass(_commandBuffer[i]);
 
