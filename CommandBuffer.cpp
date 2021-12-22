@@ -59,7 +59,6 @@ void CommandBuffer::createCommandPool()
 	VkResult error = vkCreateCommandPool(DeviceObj->getDevice(), &poolInfo, nullptr, &_commandPool);
 	if (error != VK_SUCCESS) {
 		Log::error("Failed to create Command Pool", error);
-
 	}
 }
 
@@ -110,11 +109,16 @@ void CommandBuffer::commandBufferLoad()
 		renderPassInfo.renderArea.extent	= *extent;
 
 		vkCmdBeginRenderPass(_commandBuffer[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		//use render pass info 
 		vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getPipeline());
+		//use pipeline 
+
 		VkBuffer vertexBuffers[] = { vertexObj->getVertexBuffer().buffer };
 		VkBuffer indexBuffer[] = { vertexObj->getIndexBuffer().buffer };
 		vector<uint16_t> indices = vertexObj->getIndices();
 		VkDeviceSize offsets[] = { 0 };
+
+		//get all vertices indices and index
 		vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, vertexBuffers,	offsets);
 		vkCmdBindIndexBuffer(_commandBuffer[i], *indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 		vkCmdDrawIndexed(_commandBuffer[i],static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
@@ -143,16 +147,35 @@ void CommandBuffer::createCommandPoolForTemp()
 	}
 }
 
-void CommandBuffer::copyBuffer(VkCommandBuffer commandBuffer, Vertex::bufferStruct& buffer)
+void CommandBuffer::copyBuffer(Vertex::bufferStruct& buffer)
 {
+	// copie un buffer visible pour le CPU vers un buffer visible par le GPU
 	
-	
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = _commandPoolTemp;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(DeviceObj->getDevice(), &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	if (result != VK_SUCCESS)
+	{
+		Log::error("failed to beginCommandBuffer", result);
+		return;
+	}
 	VkBufferCopy copyRegion{};
 	copyRegion.srcOffset = 0; // Optionel
 	copyRegion.dstOffset = 0; // Optionel
 	copyRegion.size = buffer.size;
 	vkCmdCopyBuffer(commandBuffer, buffer.staggingBuf, buffer.buffer, 1, &copyRegion);
-	VkResult result = vkEndCommandBuffer(commandBuffer);
+	result = vkEndCommandBuffer(commandBuffer);
 	if (result != VK_SUCCESS)
 	{
 		Log::error("failed to end CommandBuffer", result);
@@ -182,51 +205,16 @@ void CommandBuffer::copyBuffer(VkCommandBuffer commandBuffer, Vertex::bufferStru
 
 void CommandBuffer::sendIndexBuffer()
 {
-	Vertex::bufferStruct indexBuffer = vertexObj->getIndexBuffer();
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = _commandPoolTemp;
-	allocInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(DeviceObj->getDevice(), &allocInfo, &commandBuffer);
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
-	if (result != VK_SUCCESS)
-	{
-		Log::error("failed to beginCommandBuffer", result);
-		return;
-	}
-	copyBuffer(commandBuffer, indexBuffer);
+	//send a command to copy a buffer
+	Vertex::bufferStruct indexBuffer = vertexObj->getIndexBuffer();	
+	copyBuffer(indexBuffer);
 }
 
 void CommandBuffer::sendVerticesBuffer()
 {
+	//send a command to copy a buffer
 	Vertex::bufferStruct VerticesBuffer = vertexObj->getVertexBuffer();
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = _commandPoolTemp;
-	allocInfo.commandBufferCount = 1;
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(DeviceObj->getDevice(), &allocInfo, &commandBuffer);
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
-	if (result != VK_SUCCESS)
-	{
-		Log::error("failed to beginCommandBuffer", result);
-		return;
-	}
-	copyBuffer(commandBuffer, VerticesBuffer);
+	copyBuffer(VerticesBuffer);
 }
 
 void CommandBuffer::createFrameBuffer()

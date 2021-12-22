@@ -34,7 +34,7 @@ private:
 	void								createCommandPoolForTemp();
 	void                                sendIndexBuffer();
 	void							    sendVerticesBuffer();
-	void								copyBuffer(VkCommandBuffer commandBuffer, Vertex::bufferStruct& buffer);
+	void								copyBuffer(Vertex::bufferStruct& buffer);
 	void								init();
 	
 				
