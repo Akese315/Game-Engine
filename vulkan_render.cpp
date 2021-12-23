@@ -221,14 +221,15 @@ void vulkan_render::createPipelineLayout()
 	pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount			= 1; 
 	pipelineLayoutInfo.pSetLayouts				= vertexObj->getDescriptorSetLayout(); // Optionel
-	pipelineLayoutInfo.pushConstantRangeCount	= 0; // Optionel
-	pipelineLayoutInfo.pPushConstantRanges		= nullptr; // Optionel	
 
 	//debug
+	
 	cout << "Layout pipeline :" << &_pipelineLayout << endl;
 	cout << "device :" << device->getDevice() << endl;
 	cout <<"pipeline info" << &pipelineLayoutInfo << endl;
 	cout << "setlayout" << pipelineLayoutInfo.pSetLayouts << endl;
+	
+	
 	//debug
 
 	VkResult err = vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout);

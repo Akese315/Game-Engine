@@ -164,26 +164,24 @@ void Vertex::updateUniformBuffer(uint32_t currentImage)
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, chrono::seconds::period>(currentTime - startTime).count();
 
-		UniformBufferObject ubo{};
-		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		//le premier paramètre indique le model, le deuxième permet de faire une rotation de 90° en fonction du temps
 		// et le dernier permet d'indiquer l'axe de rotation
-		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f,
+		uniformBuffer.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f,
 			0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		// le premier paramètre : la position de l'oeil(caméra)
 		//le deuxième : la position de la cible (ce que l'on regarde) inclinaison
 		//le dernier est l'axe de la hauteur
-		ubo.proj = glm::perspective(glm::radians(45.0f),
+		uniformBuffer.proj = glm::perspective(glm::radians(45.0f),
 			swapchainObj->getCurrentWindowSize().width / (float)swapchainObj->getCurrentWindowSize().height, 0.1f,
 			10.0f);
 		//donne la perspective ici de 45° et les deux autre paramètre sont le ration de la taille de l'écran (ici)
-		ubo.proj[1][1] *= -1;
+		uniformBuffer.proj[1][1] *= -1;
 
 		//la bibliothèque glm a été crée pour OPENGL qui inverse le positif et le négatif donc il faut tout inverser 
 		void* data;
-		vkMapMemory(deviceObj->getDevice(), uniformBuffersMemory[currentImage], 0,
-			sizeof(ubo), 0, &data);
-		memcpy(data, &ubo, sizeof(ubo));
+		vkMapMemory(deviceObj->getDevice(), uniformBuffersMemory[currentImage], 0, sizeof(uniformBuffer), 0, &data);
+		memcpy(data, &uniformBuffer, sizeof(uniformBuffer));
 		vkUnmapMemory(deviceObj->getDevice(), uniformBuffersMemory[currentImage]);
 }
 
@@ -211,6 +209,10 @@ void Vertex::createDescriptorSets()
 	std::vector<VkDescriptorSetLayout> layouts(swapchainObj->getSwapchainImage().size(),
 		descriptorSetLayout);
 
+	cout << "Descriptor layout, emplacement 1: " << layouts[0] << endl;
+	cout << "Descriptor layout, emplacement 2: " << layouts[1] << endl;
+	cout << "Descriptor layout, emplacement 3: " << layouts[2] << endl;
+	
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = descriptorPool;
@@ -222,6 +224,7 @@ void Vertex::createDescriptorSets()
 	if ( result != VK_SUCCESS) {
 		Log::error("Failed to allocate descriptorset", result);			
 	}
+
 	for (size_t i = 0; i < swapchainObj->getSwapchainImage().size(); i++) {
 		VkDescriptorBufferInfo bufferInfo{};
 		bufferInfo.buffer = uniformBuffers[i];

@@ -64,11 +64,13 @@ private:
 	};
 	
 	struct UniformBufferObject {
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::mat4 proj;
-		
+		glm::mat4 model;				//64 byte
+		glm::mat4 view;					//64 byte
+		glm::mat4 proj;					//64 byte
+		glm::mat4 memory_reserved;		//64 byte
 	};
+
+	// Un UBO a besoin d'avoir une taile de 256 bytes donc on en rajoute un juste pour compléter
 	UniformBufferObject uniformBuffer;
 
 
