@@ -3,8 +3,13 @@
 #include "Log.h"
 #include <vector>
 #include <array>
+#include "SwapChain.h"
 #include "Device.h"
-#define	GLM_FORCE_RADIANS
+#include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
+#define GLM_FORCE_RADIANS
+
+
 
 
 
@@ -26,23 +31,31 @@ public:
 	//C'est une structure qui permet de rassembler le stagging buffer et le buffer
 	// Elle est utilisée par les vertex et les index.
 
-	Vertex(Device* deviceObj);
+	Vertex(Device* deviceObj, SwapChain* swapchainObj);
 	~Vertex();
 	void cleanUp();
 	void recreateVertexObj();
 	void setColor(string color);
 	bufferStruct& getVertexBuffer();
 	bufferStruct& getIndexBuffer();
+	VkDescriptorSetLayout* getDescriptorSetLayout();
 	vector<uint16_t> getIndices();
 	static VkVertexInputBindingDescription getBindingDescription();
 	static array<VkVertexInputAttributeDescription, 2>	getAttributeDescriptions();
+	void updateUniformBuffer(uint32_t index);
+	vector<VkDescriptorSet> getDescriptorSetList();
 
 
 private:
 
-	uint32_t vertexCount;
-	Device* deviceObj;
-
+	uint32_t vertexCount = NULL;
+	Device* deviceObj = NULL;
+	SwapChain* swapchainObj = NULL;
+	VkDescriptorSetLayout descriptorSetLayout;
+	VkDescriptorPool descriptorPool;
+	vector<VkBuffer> uniformBuffers;
+	vector<VkDeviceMemory> uniformBuffersMemory;
+	vector<VkDescriptorSet> descriptorSets;
 
 	struct vertexStruc
 	{
@@ -58,6 +71,7 @@ private:
 	};
 	UniformBufferObject uniformBuffer;
 
+
 	const vector<vertexStruc> vertices =
 	{
 		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -71,12 +85,19 @@ private:
 
 	bufferStruct vertexBufferStruct;
 	bufferStruct indexBufferStruct;
+
+	
+
 	//déclaration de la structure bufferStruc du vertex et des index.
 
 	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void createVertexBuffer();
 	void createDescriptorSetLayout();
 	void createIndexBuffer();
+	void createUniformBuffers();
+	void createDescriptorPool();
+	void createDescriptorSets();
+	
 	
 	
 };

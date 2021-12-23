@@ -21,7 +21,7 @@ private:
 	Device*								device = NULL;
 	VkExtent2D*							extent;
 	SwapChain*							swapchain = NULL;
-	
+	Vertex*								vertexObj = NULL;
 
 
 	vector<char>						readFile(const std::string& filename);
@@ -36,10 +36,11 @@ private:
 	
 public:
 
-										vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain);
+										vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain, Vertex* vertexObj);
 										~vulkan_render();
 	 VkRenderPass						getRenderPass();
-	 VkPipeline							getPipeline();
+	 VkPipeline							getGraphicPipeline();
+	 VkPipelineLayout					getLayoutPipeline();
 	 void								recreatePipeline();
 	 void								cleanUp();
 };

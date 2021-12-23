@@ -13,7 +13,7 @@ void Vulkan_Obj::init()
 	instance = engineInstance->getInstance();
 	getAllDevice();
 	selectMainDevice();
-	windowObj = new window_engine(instance, mainDevice,500,500);
+	windowObj = new window_engine(instance, mainDevice,1000,800);
 	readFile("Triangle.txt");
 	windowObj->loop();
 }

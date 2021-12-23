@@ -1,10 +1,11 @@
 #include "vulkan_render.h"
 
-vulkan_render::vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain)
+vulkan_render::vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain, Vertex* vertexObj)
 {
 	this->swapchain		= swapchain;
 	this->extent		= extent;
 	this->device		= device;
+	this->vertexObj		= vertexObj;
 
 
 	init();
@@ -110,7 +111,7 @@ void vulkan_render::init()
 	rasterizer.polygonMode				=	VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth				=	1.0f;
 	rasterizer.cullMode					=	VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace				=	VK_FRONT_FACE_CLOCKWISE;
+	rasterizer.frontFace				=	VK_FRONT_FACE_COUNTER_CLOCKWISE;;
 	rasterizer.depthBiasEnable			=	VK_FALSE;
 	rasterizer.depthBiasConstantFactor	=	0.0f; // Optionel
 	rasterizer.depthBiasClamp			=	0.0f; // Optionel
@@ -218,10 +219,17 @@ void vulkan_render::createPipelineLayout()
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount			= 0; // Optionel
-	pipelineLayoutInfo.pSetLayouts				= nullptr; // Optionel
+	pipelineLayoutInfo.setLayoutCount			= 1; 
+	pipelineLayoutInfo.pSetLayouts				= vertexObj->getDescriptorSetLayout(); // Optionel
 	pipelineLayoutInfo.pushConstantRangeCount	= 0; // Optionel
 	pipelineLayoutInfo.pPushConstantRanges		= nullptr; // Optionel	
+
+	//debug
+	cout << "Layout pipeline :" << &_pipelineLayout << endl;
+	cout << "device :" << device->getDevice() << endl;
+	cout <<"pipeline info" << &pipelineLayoutInfo << endl;
+	cout << "setlayout" << pipelineLayoutInfo.pSetLayouts << endl;
+	//debug
 
 	VkResult err = vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout);
 	if (err != VK_SUCCESS) {
@@ -311,9 +319,14 @@ VkRenderPass vulkan_render::getRenderPass()
 }
 
 
-VkPipeline vulkan_render::getPipeline()
+VkPipeline vulkan_render::getGraphicPipeline()
 {
 	return _graphicsPipeline;
+}
+
+VkPipelineLayout vulkan_render::getLayoutPipeline()
+{
+	return _pipelineLayout;
 }
 
 

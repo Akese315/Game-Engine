@@ -94,6 +94,8 @@ void window_engine::drawFrame()
 	}
 	_imagesInFlight[imageIndex] = _inFlightFences[_currentFrame];
 
+	VertexObj->updateUniformBuffer(imageIndex);
+
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -251,7 +253,7 @@ void window_engine::swapChainDeInit()
 
 void window_engine::PipelineInit()
 {
-	renderer = new vulkan_render(this->deviceObj, &_swapchainExtent, swapchainObj);
+	renderer = new vulkan_render(this->deviceObj, &_swapchainExtent, swapchainObj, VertexObj);
 	
 	
 }
@@ -262,7 +264,7 @@ void window_engine::PipelineDeInit()
 
 void window_engine::initVertexBuffer()
 {
-	VertexObj = new Vertex(this->deviceObj);
+	VertexObj = new Vertex(this->deviceObj, swapchainObj);
 }
 
 void window_engine::deInitVertexBuffer()

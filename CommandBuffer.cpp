@@ -83,6 +83,7 @@ void CommandBuffer::createCommandBuffer()
 }
 void CommandBuffer::commandBufferLoad()
 {
+	vector<VkDescriptorSet> descriptorSetList = vertexObj->getDescriptorSetList();
 	for (size_t i = 0; i < _commandBuffer.size(); i++)
 	{
 
@@ -110,7 +111,7 @@ void CommandBuffer::commandBufferLoad()
 
 		vkCmdBeginRenderPass(_commandBuffer[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		//use render pass info 
-		vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getPipeline());
+		vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getGraphicPipeline());
 		//use pipeline 
 
 		VkBuffer vertexBuffers[] = { vertexObj->getVertexBuffer().buffer };
@@ -121,6 +122,8 @@ void CommandBuffer::commandBufferLoad()
 		//get all vertices indices and index
 		vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, vertexBuffers,	offsets);
 		vkCmdBindIndexBuffer(_commandBuffer[i], *indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindDescriptorSets(_commandBuffer[i],VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getLayoutPipeline(), 0, 1,
+			&descriptorSetList[i], 0, nullptr);
 		vkCmdDrawIndexed(_commandBuffer[i],static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 		vkCmdEndRenderPass(_commandBuffer[i]);
 
@@ -200,6 +203,8 @@ void CommandBuffer::copyBuffer(Vertex::bufferStruct& buffer)
 	}
 	vkDestroyBuffer(DeviceObj->getDevice(), buffer.staggingBuf, nullptr);
 	vkFreeMemory(DeviceObj->getDevice(), buffer.staggingMem, nullptr);
+
+	vkFreeCommandBuffers(DeviceObj->getDevice(), _commandPoolTemp, 1, &commandBuffer);
 }
 
 
