@@ -21,6 +21,7 @@ private:
 	void getPorperties();
 	void init_QueueFamily();
 	void getQueueFamily();
+	void getLayersProperties();
 
 	VkPhysicalDeviceProperties		_gpu_properties{};
 	vector<const char*>				_extNames;

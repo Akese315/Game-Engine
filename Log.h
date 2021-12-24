@@ -12,6 +12,7 @@ public:
 	static void warning(string message, int importance);
 	static void message(string message);
 	static void success(string message);
+
 private:
 	static string ConvertErrorToString(VkResult error);
 };

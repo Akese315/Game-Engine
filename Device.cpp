@@ -20,6 +20,7 @@ void Device::getPorperties()
 {
 	vkGetPhysicalDeviceProperties(_gpu, &_gpu_properties);
 	ShowGPUprops();
+	getLayersProperties();
 }
 
 VkDevice Device::getDevice()
@@ -117,6 +118,18 @@ void Device::getQueueFamily()
 	
 	vkGetDeviceQueue(_device, _graphics_family_index, 0,&_graphicsQueue);
 
+}
+
+void Device::getLayersProperties()
+{
+	uint32_t count = 0;
+	vkEnumerateDeviceLayerProperties(_gpu, &count, NULL);
+	vector<VkLayerProperties> layerPropsList(count);
+	VkResult result = vkEnumerateDeviceLayerProperties(_gpu, &count, layerPropsList.data());
+	for (VkLayerProperties property : layerPropsList)
+	{
+		cout << property.layerName << " description : " << property.description << endl;
+	}
 }
 
 VkQueue Device::getQueue()

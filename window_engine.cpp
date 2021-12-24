@@ -231,7 +231,7 @@ void window_engine::WindowResized()
 	swapchainObj	->recreateSwapChain();
 	_swapchainExtent = swapchainObj->getCurrentWindowSize();
 	VertexObj->recreateVertexObj();
-	renderer->recreatePipeline();	
+	renderer ->recreatePipeline();	
 	commandBufferObj->recreateCommandObj();
 	_imagesInFlight.resize((swapchainObj->getSwapchainImage()).size(), VK_NULL_HANDLE);
 }

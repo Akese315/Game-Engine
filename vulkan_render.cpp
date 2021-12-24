@@ -35,8 +35,7 @@ void vulkan_render::initShader()
 
 
 void vulkan_render::recreatePipeline()
-{
-	
+{	
 	init();
 }
 

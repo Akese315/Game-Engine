@@ -1,6 +1,7 @@
 #include "Vertex.h"
 
-Vertex::Vertex(Device *deviceObj, SwapChain* swapchainObj) {
+Vertex::Vertex(Device *deviceObj, SwapChain* swapchainObj)
+  {
 	this->deviceObj = deviceObj;
 	this->swapchainObj = swapchainObj;
 	//initialition : Les buffers de verticies et d'index sont créer mais attendent que le commandBuffer les demande.
@@ -44,8 +45,8 @@ void Vertex::createBuffers(VkDeviceSize size, VkBufferUsageFlags usage,VkMemoryP
 	//cela crée un Buffer
 	VkBufferCreateInfo	bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	//structure
 	VkResult result = vkCreateBuffer(deviceObj->getDevice(), &bufferInfo, nullptr, &buffer);
@@ -69,6 +70,14 @@ void Vertex::createBuffers(VkDeviceSize size, VkBufferUsageFlags usage,VkMemoryP
 
 		Log::error("Failed to allocateMemory of verticies.", result);
 		return;
+	}
+	switch (usage)
+	{
+	case VK_BUFFER_USAGE_VERTEX_BUFFER_BIT:
+		break;
+
+
+	
 	}
 	Log::success("Verticies memory allocated.");
 	result = vkBindBufferMemory(deviceObj->getDevice(), buffer, bufferMemory, 0);
@@ -143,7 +152,7 @@ void Vertex::createDescriptorSetLayout()
 
 void Vertex::createUniformBuffers() {
 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-	
+		
 		uniformBuffers.resize(swapchainObj->getSwapchainImage().size());
 	uniformBuffersMemory.resize(swapchainObj->getSwapchainImage().size());
 	
@@ -209,9 +218,9 @@ void Vertex::createDescriptorSets()
 	std::vector<VkDescriptorSetLayout> layouts(swapchainObj->getSwapchainImage().size(),
 		descriptorSetLayout);
 
-	cout << "Descriptor layout, emplacement 1: " << layouts[0] << endl;
-	cout << "Descriptor layout, emplacement 2: " << layouts[1] << endl;
-	cout << "Descriptor layout, emplacement 3: " << layouts[2] << endl;
+	cout << "Descriptor layout, emplacement 1: " << &layouts[0] << endl;
+	cout << "Descriptor layout, emplacement 2: " << &layouts[1] << endl;
+	cout << "Descriptor layout, emplacement 3: " << &layouts[2] << endl;
 	
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -275,7 +284,7 @@ void Vertex::recreateVertexObj()
 	createVertexBuffer();
 	createIndexBuffer();
 	createDescriptorSetLayout();
-	createUniformBuffers();
+	createUniformBuffers();		
 	createDescriptorPool();
 	createDescriptorSets();
 
