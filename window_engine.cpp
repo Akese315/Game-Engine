@@ -42,9 +42,10 @@ int window_engine::init()
 	glfwSetWindowPos(_window, 710, 290);
 	CreateSurface();
 	swapChainInit();
-	initVertexBuffer();
-	PipelineInit();	
 	CommandBufferInit();
+	initVertexBuffer();
+	PipelineInit();
+	commandBufferObj->init();
 	createSyncObjects();
 	
 	

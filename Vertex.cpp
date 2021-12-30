@@ -5,6 +5,7 @@ Vertex::Vertex(Device *deviceObj, SwapChain* swapchainObj)
 	this->deviceObj = deviceObj;
 	this->swapchainObj = swapchainObj;
 	//initialition : Les buffers de verticies et d'index sont créer mais attendent que le commandBuffer les demande.
+	createTextureImage();
 	createVertexBuffer();
 	createIndexBuffer();
 	createDescriptorSetLayout();
@@ -173,7 +174,7 @@ void Vertex::updateUniformBuffer(uint32_t currentImage)
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, chrono::seconds::period>(currentTime - startTime).count();
 
-		uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(144.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		//le premier paramètre indique le model, le deuxième permet de faire une rotation de 90° en fonction du temps
 		// et le dernier permet d'indiquer l'axe de rotation
 		uniformBuffer.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f,
@@ -253,6 +254,77 @@ void Vertex::createDescriptorSets()
 
 		vkUpdateDescriptorSets(deviceObj->getDevice(), 1, &descriptorWrite, 0, nullptr);
 	}
+}
+
+void Vertex::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+	VkImage& image, VkDeviceMemory& imageMemory)
+{
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.extent.width = height;
+	imageInfo.extent.height = width;
+	imageInfo.extent.depth = 1;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.format = format;
+	imageInfo.tiling = tiling;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.usage = usage ;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.flags = 0;
+
+	VkResult result = vkCreateImage(deviceObj->getDevice(), &imageInfo, nullptr, &image);
+	if (result != VK_SUCCESS) {
+		Log::error("failed to create an image with texture", result);
+	}
+	VkMemoryRequirements memRequirements;
+	vkGetImageMemoryRequirements(deviceObj->getDevice(), image, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = deviceObj->findMemoryType(memRequirements.memoryTypeBits, properties);
+	result = vkAllocateMemory(deviceObj->getDevice(), &allocInfo, nullptr, &imageMemory);
+	if (result != VK_SUCCESS) {
+		Log::error("failed to allocate image memory", result);
+
+	}
+
+	vkBindImageMemory(deviceObj->getDevice(), image, imageMemory, 0);
+}
+
+void Vertex::createTextureImage()
+{
+	int texWidth, texHeight, texChannels;
+
+	stbi_uc * pixels = stbi_load("textures/foret.jpg", &texWidth,
+		&texHeight, &texChannels, STBI_rgb_alpha);
+	VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+		if (!pixels)
+		{
+		throw std::runtime_error("échec du chargement d'une image!");		
+		}
+
+		createBuffers(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
+			stagingBufferMemory);
+		void* data;
+
+		vkMapMemory(deviceObj->getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+		memcpy(data, pixels, static_cast<size_t>(imageSize));
+		vkUnmapMemory(deviceObj->getDevice(), stagingBufferMemory);
+
+		stbi_image_free(pixels);//libération de la mémoire
+
+		createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB,
+			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+			VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage,
+			textureImageMemory);		
 }
 
 Vertex::bufferStruct& Vertex::getVertexBuffer()

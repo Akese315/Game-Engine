@@ -7,6 +7,8 @@
 #include "Device.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
+#include <GLFW/stb_image.h>
+#define STB_IMAGE_IMPLEMENTATION
 #define GLM_FORCE_RADIANS
 
 
@@ -56,6 +58,11 @@ private:
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	vector<VkDescriptorSet> descriptorSets;
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	VkImage textureImage;
+	VkDeviceMemory textureImageMemory;
+
 
 	struct vertexStruc
 	{
@@ -79,7 +86,7 @@ private:
 		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
 		{ {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
 		{ {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-		{ {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+		{ {-0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}
 	};
 	// vertex (coordonnées et couleurs)
 	const vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0 };
@@ -99,6 +106,9 @@ private:
 	void createUniformBuffers();
 	void createDescriptorPool();
 	void createDescriptorSets();
+	void createImage(uint32_t width, uint32_t height, VkFormat format,	VkImageTiling tiling, VkImageUsageFlags usage,	VkMemoryPropertyFlags properties,
+		VkImage& image,	VkDeviceMemory& imageMemory);
+	void createTextureImage();
 	
 	
 	

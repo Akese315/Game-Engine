@@ -17,6 +17,7 @@ public:
 										~CommandBuffer();
 	vector<VkCommandBuffer>				getCommandBuffer();
 	void								recreateCommandObj();
+	void								init();
 	void								cleanUp();
 	
 	
@@ -35,7 +36,7 @@ private:
 	void                                sendIndexBuffer();
 	void							    sendVerticesBuffer();
 	void								copyBuffer(Vertex::bufferStruct& buffer);
-	void								init();
+	
 	
 				
 	vector<VkFramebuffer>				_swapChainFramebuffers;
