@@ -4,7 +4,8 @@
 #include <fstream>
 #include "Device.h"
 #include "SwapChain.h"
-#include "vertex.h"
+#include "Type.h"
+#include <array>
 #include <vulkan/include/vulkan.h>
 class vulkan_render
 {
@@ -16,12 +17,11 @@ private:
 	VkRenderPass						_renderPass = NULL;
 	VkPipelineLayout					_pipelineLayout = NULL;
 	VkPipeline							_graphicsPipeline = NULL;
+	VkDescriptorSetLayout				_descriptorSetLayout = NULL;
 
-
-	Device*								device = NULL;
+	Device*								deviceObj = NULL;
 	VkExtent2D*							extent;
 	SwapChain*							swapchain = NULL;
-	Vertex*								vertexObj;
 
 
 	vector<char>						readFile(const std::string& filename);
@@ -30,17 +30,21 @@ private:
 	void								getShaderCode();
 	void								init();
 	void								createRenderPass();
-	void								createPipelineLayout();
+	VkVertexInputBindingDescription			getBindingDescription();
+	array<VkVertexInputAttributeDescription, 2>		getAttributeDescriptions();
 	void								initShader();
 	
 	
 public:
 
-										vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain, Vertex* vertex);
+										vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain);
 										~vulkan_render();
-	 VkRenderPass						getRenderPass();
-	 VkPipeline							getGraphicsPipeline();
-	 VkPipelineLayout					getPipelineLayout();
+	void								createPipelineLayout();
+	void								createDescriptorSetLayout();
+	 VkRenderPass*						getRenderPass();
+	 VkPipeline*							getGraphicsPipeline();
+	 VkPipelineLayout*					getPipelineLayout();
+	 VkDescriptorSetLayout*				getDescriptorSetLayout();
 	 void								recreatePipeline();
 	 void								cleanUp();
 };

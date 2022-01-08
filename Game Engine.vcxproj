@@ -158,6 +158,7 @@
     <ClInclude Include="CommandBuffer.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="EngineInstance.h" />
+    <ClInclude Include="Header.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="SwapChain.h" />
     <ClInclude Include="Type.h" />

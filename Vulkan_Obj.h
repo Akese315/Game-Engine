@@ -1,9 +1,9 @@
 #pragma once
-#include "Log.h";
+#include "Log.h"
 #include <vector>
 #include "EngineInstance.h"
 #include "Device.h"
-#include "window_engine.h";
+#include "window_engine.h"
 #include <iostream>
 #include <fstream>
 #include <string>

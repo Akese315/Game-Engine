@@ -7,7 +7,7 @@
 #include <vulkan/include/vulkan.h>
 #include <gl/GL.h>
 
-#include "Log.h";
+#include "Log.h"
 #include "Device.h"
 #include "SwapChain.h"
 #include "vulkan_render.h"
@@ -48,11 +48,8 @@ private:
 	void swapChainDeInit();
 	void swapChainInit();
 	void CreateSurface();
-	void CreateGraphicsPipeline();
-	void PipelineDeInit();
-	void createFrameBuffer();
-	void destroyFrameBuffer();
 	void PipelineInit();
+	void PipelineDeInit();
 	void createSyncObjects();
 	void initVertexBuffer();
 	void deInitVertexBuffer();

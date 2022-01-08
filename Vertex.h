@@ -1,9 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <vulkan/include/vulkan.h>
 #include "Log.h"
 #include <vector>
 #include <array>
 #include "SwapChain.h"
+#include "Type.h"
+#include "CommandBuffer.h"
+#include "vulkan_render.h"
 #include "Device.h"
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,34 +15,28 @@
 
 
 
+
 class Vertex
 {
 
+	
+
 public:
 	
-	struct bufferStruct
-	{
-		VkBuffer buffer;
-		VkBuffer staggingBuf;
-		VkDeviceMemory staggingMem;
-		VkDeviceMemory Memory;
-		VkDeviceSize size;
-
-	};
 	
-
-
 	//C'est une structure qui permet de rassembler le stagging buffer et le buffer
 	// Elle est utilisée par les vertex et les index.
 
-	Vertex(Device* deviceObj, SwapChain* swapchainObj);
+	Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* commandBufferObj, vulkan_render * renderer);
 	~Vertex();
 	void cleanUp();
 	void recreateVertexObj();
 	void setColor(string color);
 	void updateUniformBuffer(uint32_t currentImage);
-	bufferStruct& getVertexBuffer();
-	bufferStruct& getIndexBuffer();
+	StructBufferObject* getVertexBuffer() {
+		return &vertexBufferStruct;
+	}
+	StructBufferObject* getIndexBuffer() { return &indexBufferStruct; }
 	vector<VkDescriptorSet> getDescriptorSet();
 	VkDescriptorSetLayout* getDescriptorSetLayout();
 	vector<uint16_t> getIndices();
@@ -51,24 +49,13 @@ private:
 	uint32_t vertexCount;
 	Device* deviceObj;
 	SwapChain* swapchainObj;
-	VkDescriptorSetLayout descriptorSetLayout;
+	CommandBuffer* CommandBufferObj;
+	vulkan_render* rendererObj;
+	VkDescriptorSetLayout* descriptorSetLayout;
 	VkDescriptorPool descriptorPool;
 	vector<VkDescriptorSet> descriptorSets;
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
-
-
-	struct vertexStruc
-	{
-		glm::vec2 pos;
-		glm::vec3 color;
-	};
-
-	struct UniformBufferObject{
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::mat4 proj;
-	};
 	
 	
 	
@@ -84,17 +71,18 @@ private:
 	const vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0 };
 
 
-	bufferStruct vertexBufferStruct;
-	bufferStruct indexBufferStruct;
+	StructBufferObject vertexBufferStruct;
+	StructBufferObject indexBufferStruct;
+	UniformBufferObject uniformBuffer;
 	//déclaration de la structure bufferStruc du vertex et des index.
 
 	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void createVertexBuffer();
-	void createDescriptorSetLayout();
 	void createUniformBuffers();
 	void createIndexBuffer();
 	void createDescriptorPool();
 	void createDescriptorSets();
+
 
 	
 };

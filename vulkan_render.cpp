@@ -1,14 +1,39 @@
 #include "vulkan_render.h"
 
-vulkan_render::vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain, Vertex* vertex)
+vulkan_render::vulkan_render(Device* deviceObj, VkExtent2D* extent, SwapChain * swapchain)
 {
 	this->swapchain		= swapchain;
 	this->extent		= extent;
-	this->device		= device;
-	this->vertexObj		= vertex;
+	this->deviceObj		= deviceObj;
 
 	init();
 	
+}
+
+VkVertexInputBindingDescription vulkan_render::getBindingDescription()
+{
+	VkVertexInputBindingDescription bindingDescription{};
+	bindingDescription.binding = 0;
+	bindingDescription.stride = sizeof(vertexStruc);
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	return bindingDescription;
+}
+array<VkVertexInputAttributeDescription, 2>	vulkan_render::getAttributeDescriptions()
+{
+	array<VkVertexInputAttributeDescription, 2 > attributeDescriptions{};
+	attributeDescriptions[0].binding = 0;
+	attributeDescriptions[0].location = 0;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[0].location = offsetof(vertexStruc, pos);
+
+	attributeDescriptions[1].binding = 0;
+	attributeDescriptions[1].location = 1;
+	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[1].offset = offsetof(vertexStruc, color);
+
+
+	return attributeDescriptions;
 }
 
 void vulkan_render::initShader()
@@ -42,9 +67,9 @@ void vulkan_render::recreatePipeline()
 
 void vulkan_render::cleanUp()
 {
-	vkDestroyPipeline(device->getDevice(), _graphicsPipeline, nullptr);	
-	vkDestroyPipelineLayout(device->getDevice(), _pipelineLayout, nullptr);
-	vkDestroyRenderPass(device->getDevice(), _renderPass, nullptr);
+	vkDestroyPipeline(deviceObj->getDevice(), _graphicsPipeline, nullptr);	
+	vkDestroyPipelineLayout(deviceObj->getDevice(), _pipelineLayout, nullptr);
+	vkDestroyRenderPass(deviceObj->getDevice(), _renderPass, nullptr);
 }
  
 
@@ -53,15 +78,15 @@ void vulkan_render::init()
 	
 	initShader();
 
-	auto bindingDescription = Vertex::getBindingDescription();
-	auto attributeDescriptions = Vertex::getAttributeDescriptions();
+	auto bindingDescription = getBindingDescription();
+	auto attributeDescriptions = getAttributeDescriptions();
 
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType							=	VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount	= 1;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());;
-	vertexInputInfo.pVertexBindingDescriptions		= &bindingDescription; 
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexBindingDescriptions		= &bindingDescription;
 	vertexInputInfo.pVertexAttributeDescriptions	= attributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -157,6 +182,7 @@ void vulkan_render::init()
 	dynamicState.pDynamicStates		= dynamicStates;
 
 	createRenderPass();
+	createDescriptorSetLayout();
 	createPipelineLayout();
 	
 
@@ -180,14 +206,14 @@ void vulkan_render::init()
 
 	
 	
-	VkResult error = vkCreateGraphicsPipelines(device->getDevice(),nullptr,1,&pipelineInfo, nullptr, &_graphicsPipeline);
+	VkResult error = vkCreateGraphicsPipelines(deviceObj->getDevice(),nullptr,1,&pipelineInfo, nullptr, &_graphicsPipeline);
 	
 	if (error != VK_SUCCESS) {
 		Log::error("Failed to create graphical pipeline!", error);
 		exit(-1);
 	}
-	vkDestroyShaderModule(device->getDevice(), _shaderStages[0].module, nullptr);
-	vkDestroyShaderModule(device->getDevice(), _shaderStages[1].module, nullptr);
+	vkDestroyShaderModule(deviceObj->getDevice(), _shaderStages[0].module, nullptr);
+	vkDestroyShaderModule(deviceObj->getDevice(), _shaderStages[1].module, nullptr);
 	
 	
 
@@ -202,7 +228,7 @@ VkShaderModule vulkan_render::createShaderModule(const std::vector<char>& code)
 	createInfo.codeSize = code.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 	VkShaderModule shaderModule;
-	VkResult error = vkCreateShaderModule(device->getDevice(), &createInfo, nullptr, &shaderModule);
+	VkResult error = vkCreateShaderModule(deviceObj->getDevice(), &createInfo, nullptr, &shaderModule);
 	if (error != VK_SUCCESS)
 	{
 		Log::error("failed to create shader", error);
@@ -219,17 +245,19 @@ void vulkan_render::createPipelineLayout()
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount			= 1; // Optionel
-	pipelineLayoutInfo.pSetLayouts				= vertexObj->getDescriptorSetLayout(); // Optionel
+	pipelineLayoutInfo.pSetLayouts				= &_descriptorSetLayout;
 	pipelineLayoutInfo.pushConstantRangeCount	= 0; // Optionel
 	pipelineLayoutInfo.pPushConstantRanges		= nullptr; // Optionel	
 
-	VkResult err = vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout);
+	VkResult err = vkCreatePipelineLayout(deviceObj->getDevice(), &pipelineLayoutInfo, nullptr, &_pipelineLayout);
 	if (err != VK_SUCCESS) {
 		Log::error("Failed to create pipelineLayout", err);
 		exit(-1);
 	}
 	Log::success("PipelineLayout created.");
 }
+
+
 
 
 void vulkan_render::createRenderPass()
@@ -269,12 +297,37 @@ void vulkan_render::createRenderPass()
 	renderPassInfo.pSubpasses = &subpass;
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
-	VkResult error = vkCreateRenderPass(device->getDevice(), &renderPassInfo, nullptr, &_renderPass);
+	VkResult error = vkCreateRenderPass(deviceObj->getDevice(), &renderPassInfo, nullptr, &_renderPass);
 	if (error != VK_SUCCESS) {
 		Log::error("Failed to create RenderPass", error);
 
 	}
 	Log::success("RenderPass created");
+}
+
+void vulkan_render::createDescriptorSetLayout()
+{
+	VkDescriptorSetLayoutBinding uboLayoutBinding{};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	uboLayoutBinding.pImmutableSamplers = nullptr;
+
+
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &uboLayoutBinding;
+
+
+	VkResult result = vkCreateDescriptorSetLayout(deviceObj->getDevice(), &layoutInfo, nullptr, &_descriptorSetLayout);
+	if (result != VK_SUCCESS)
+	{
+		Log::error("Failed to create Descriptor set Layout.", result);
+	}
+
 }
 
 
@@ -305,19 +358,24 @@ std::vector<char> vulkan_render::readFile(const std::string& filename) {
 }
 
 
-VkRenderPass vulkan_render::getRenderPass()
+VkRenderPass* vulkan_render::getRenderPass()
 {
-	return _renderPass;
+	return &_renderPass;
 }
 
 
-VkPipeline vulkan_render::getGraphicsPipeline()
+VkPipeline* vulkan_render::getGraphicsPipeline()
 {
-	return _graphicsPipeline;
+	return &_graphicsPipeline;
 }
-VkPipelineLayout vulkan_render::getPipelineLayout()
+VkPipelineLayout* vulkan_render::getPipelineLayout()
 {
-	return _pipelineLayout;
+	return &_pipelineLayout;
+}
+
+VkDescriptorSetLayout* vulkan_render::getDescriptorSetLayout()
+{
+	return &_descriptorSetLayout;
 }
 
 vulkan_render::~vulkan_render()

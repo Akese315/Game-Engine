@@ -42,12 +42,12 @@ int window_engine::init()
 	glfwSetWindowPos(_window, 710, 290);
 	CreateSurface();
 	swapChainInit();
-	initVertexBuffer();
-	PipelineInit();	
+	PipelineInit();
 	CommandBufferInit();
+	initVertexBuffer();		
 	createSyncObjects();
 	
-	
+	return 0;
 }
 
 void window_engine::loop()
@@ -65,9 +65,9 @@ void window_engine::loop()
 		vkDestroySemaphore(deviceObj->getDevice(), _imageAvailableSemaphore[i], nullptr);
 		vkDestroyFence(deviceObj->getDevice(), _inFlightFences[i], nullptr);
 	}	
+	deInitVertexBuffer();	
 	CommandBufferDeInit();
-	deInitVertexBuffer();
-	PipelineDeInit();	
+	PipelineDeInit();
 	swapChainDeInit();
 	vkDestroySurfaceKHR(VulkanInstance, _surface, nullptr);
 	glfwTerminate();
@@ -222,14 +222,14 @@ void window_engine::WindowResized()
 	vkDeviceWaitIdle(deviceObj->getDevice());
 	
 	commandBufferObj->cleanUp();
-	VertexObj		->cleanUp();
-	renderer		->cleanUp();
-	swapchainObj	->cleanUp();
-	swapchainObj	->recreateSwapChain();
+	VertexObj->cleanUp();
+	renderer->cleanUp();
+	swapchainObj->cleanUp();
+	swapchainObj->recreateSwapChain();
 	_swapchainExtent = swapchainObj->getCurrentWindowSize();
-	renderer		->recreatePipeline();
-	VertexObj		->recreateVertexObj();
-	commandBufferObj->recreateCommandObj();
+	renderer->recreatePipeline();
+	commandBufferObj->recreateCommandObj();	
+	VertexObj->recreateVertexObj();	
 	_imagesInFlight.resize((swapchainObj->getSwapchainImage()).size(), VK_NULL_HANDLE);
 }
 
@@ -250,7 +250,7 @@ void window_engine::swapChainDeInit()
 
 void window_engine::PipelineInit()
 {
-	renderer = new vulkan_render(this->deviceObj, &_swapchainExtent, swapchainObj, VertexObj);
+	renderer = new vulkan_render(this->deviceObj, &_swapchainExtent, swapchainObj);
 	
 	
 }
@@ -261,7 +261,7 @@ void window_engine::PipelineDeInit()
 
 void window_engine::initVertexBuffer()
 {
-	VertexObj = new Vertex(this->deviceObj,this->swapchainObj);
+	VertexObj = new Vertex(this->deviceObj,this->swapchainObj, commandBufferObj, renderer);
 }
 
 void window_engine::deInitVertexBuffer()
@@ -271,7 +271,7 @@ void window_engine::deInitVertexBuffer()
 
 void window_engine::CommandBufferInit()
 {
-	commandBufferObj = new CommandBuffer(this->deviceObj, this->swapchainObj,this->renderer, &this->_swapchainExtent, this->VertexObj);
+	commandBufferObj = new CommandBuffer(this->deviceObj, this->swapchainObj, &this->_swapchainExtent);
 }
 
 void window_engine::CommandBufferDeInit()
