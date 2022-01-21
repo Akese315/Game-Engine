@@ -91,13 +91,15 @@ void Device::init_QueueFamily()
 	device_queue_info.queueCount		= 1;
 	device_queue_info.pQueuePriorities	= queue_priorities;
 
-
+	VkPhysicalDeviceFeatures deviceFeatures{};
+	deviceFeatures.samplerAnisotropy = VK_TRUE;
 	VkDeviceCreateInfo device_create_info{};  
 	device_create_info.sType				= VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	device_create_info.queueCreateInfoCount = 1;
 	device_create_info.pQueueCreateInfos = &device_queue_info;
 	device_create_info.enabledExtensionCount = _extensionCount;
 	device_create_info.ppEnabledExtensionNames = _extNames.data();
+	device_create_info.pEnabledFeatures;
 	
 	
 
@@ -111,6 +113,25 @@ void Device::init_QueueFamily()
 	Log::success("The device has been created");
 	
 }
+
+void Device::isDeviceSuitable(VkPhysicalDevice device) 
+{
+	/*
+	QueueFamilyIndices indices = findQueueFamilies(device);
+
+	bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+	bool swapChainAdequate = false;
+	if (extensionsSupported) {
+		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+	}
+
+	VkPhysicalDeviceFeatures supportedFeatures;
+	vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+	return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+	*/}
 
 void Device::getQueueFamily()
 {
@@ -128,8 +149,26 @@ VkQueue Device::getQueue()
 
 void Device::ShowGPUprops()
 {
-	cout << _gpu_properties.deviceName << endl;
-	cout << _gpu_properties.deviceID << endl;
+	
+	Log::message<char *>(_gpu_properties.deviceName);
+	switch (_gpu_properties.deviceType)
+	{
+	case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+		Log::message<string>("GPU TYPE : VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU");
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+		Log::message<string>("GPU TYPE : VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU");
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_CPU:
+		Log::message<string>("GPU TYPE : VK_PHYSICAL_DEVICE_TYPE_CPU");
+		break;
+	case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+		Log::message<string>("GPU TYPE : VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU");
+		break;
+	default:
+		Log::message<string>("GPU TYPE : Other type of device");
+		break;
+	}
 	
 }
 

@@ -4,20 +4,26 @@
 typedef struct
 {
 	VkBuffer buffer;
-	VkDeviceMemory memory;
-	
-	
+	VkDeviceMemory memory;	
 
 }StructBufferObject;
+
+typedef struct
+{
+	VkImage image;
+	VkDeviceMemory memory;
+
+}StructImageObject;
 
 typedef struct 
 {
 	glm::vec2 pos;
 	glm::vec3 color;
+	glm::vec2 texCoord;
 }vertexStruc;
 
 typedef struct {
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 proj;
+	alignas(16) glm::mat4 model;
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
 }UniformBufferObject;

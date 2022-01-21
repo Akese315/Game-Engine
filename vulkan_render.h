@@ -31,7 +31,7 @@ private:
 	void								init();
 	void								createRenderPass();
 	VkVertexInputBindingDescription			getBindingDescription();
-	array<VkVertexInputAttributeDescription, 2>		getAttributeDescriptions();
+	array<VkVertexInputAttributeDescription, 3>		getAttributeDescriptions();
 	void								initShader();
 	
 	

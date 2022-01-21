@@ -3,26 +3,30 @@
 
 void Log::error(string message, VkResult error)
 {
-	cout <<"ERROR : "<< message << "Error : " << ConvertErrorToString(error)<<endl;
+    string c1 = "\x1B[31m";
+    string c2 = "\033[0m\t\t";
+    string errormessage  = c1 + "   ERROR :"+message + c2 + ConvertErrorToString(error);
+    printf(errormessage.c_str());
+    printf("\n");
+
 	
 
 }
-void  Log::warning(string message, int importance)
-{
-	cout <<"WARNING : "<< message << importance << endl;
 
-	
-}
-void  Log::message(string message)
+void Log::warning(const string & message)
 {
-	cout <<"MESSAGE : " << message << endl;
+	cout <<"WARNING : "<< message <<endl;
 	
 }
+
 
 void  Log::success(string message)
 {
-	cout << "SUCCESS : "<<message << endl;
-
+    string c1 = "\x1B[32m";
+    string c2 = "\033[0m\t\t";
+    string errormessage = c1 + "   SUCCESS :" + c2 + message ;
+    printf(errormessage.c_str());
+    printf("\n");
 }
 
 string Log::ConvertErrorToString(VkResult error)

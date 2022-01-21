@@ -1,4 +1,7 @@
 #pragma once
+#define STB_IMAGE_IMPLEMENTATION
+
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <vulkan/include/vulkan.h>
 #include "Log.h"
@@ -9,7 +12,6 @@
 #include "CommandBuffer.h"
 #include "vulkan_render.h"
 #include "Device.h"
-#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 
@@ -56,16 +58,19 @@ private:
 	vector<VkDescriptorSet> descriptorSets;
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
-	
+	VkImageView textureImageView;
+	VkSampler textureSampler;
+	VkPipelineStageFlags sourceStage;
+	VkPipelineStageFlags destinationStage;
 	
 	
 
 	const vector<vertexStruc> vertices =
 	{
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-		{ {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-		{ {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-		{ {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+		{{-0.5f, -0.5f}, {0.0f, 0.5f, 1.0f},{0.0f,0.0f}},
+		{ {0.5f, -0.5f}, {0.5f, 0.5f, 0.0f},{1.0f,0.0f}},
+		{ {0.5f, 0.5f}, {0.5f, 0.5f, 0.0f},{1.0f,1.0f}},
+		{ {-0.5f, 0.5f}, {0.0f, 0.5f, 1.0f},{0.0f,1.0f}}
 	};
 	// vertex (coordonnées et couleurs)
 	const vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0 };
@@ -73,6 +78,7 @@ private:
 
 	StructBufferObject vertexBufferStruct;
 	StructBufferObject indexBufferStruct;
+	StructImageObject imageBuffer;
 	UniformBufferObject uniformBuffer;
 	//déclaration de la structure bufferStruc du vertex et des index.
 
@@ -82,8 +88,14 @@ private:
 	void createIndexBuffer();
 	void createDescriptorPool();
 	void createDescriptorSets();
-
-
+	void createTextureImage();
+	void createTextureImageView();
+	void createTextureSampler();
+	void transitionImageLayout(VkImage image, VkFormat format,
+		VkImageLayout oldLayout, VkImageLayout newLayout);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t
+		width, uint32_t height);
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, StructImageObject& imageStruct);
 	
 };
 

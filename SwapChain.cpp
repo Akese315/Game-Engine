@@ -57,30 +57,32 @@ void SwapChain::InitSwapImage()
 
 	for (uint32_t i = 0; i < _swapChainImages.size(); i++)
 	{
-		VkImageViewCreateInfo imageView_info{};
-		imageView_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		imageView_info.image = _swapChainImages[i];
-		imageView_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		imageView_info.format = _SwapchainFormat.format;
-		imageView_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		imageView_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		imageView_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		imageView_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		imageView_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		imageView_info.subresourceRange.baseMipLevel = 0;
-		imageView_info.subresourceRange.levelCount = 1;
-		imageView_info.subresourceRange.baseArrayLayer = 0;
-		imageView_info.subresourceRange.layerCount = 1;
-
-		auto err = vkCreateImageView(deviceObj->getDevice(), &imageView_info, nullptr, &_swapchainImageView[i]);
-		if (err != VK_SUCCESS)
-		{
-			Log::error("Failed to create SwapchainKHRimage", err);
-		}
+		_swapchainImageView[i] = createImageView(_swapChainImages[i], _SwapchainFormat.format); 
 		Log::success("SwapchainImage created ");
 	}
 }
+VkImageView SwapChain::createImageView(VkImage image, VkFormat format)
+{
+	VkImageViewCreateInfo imageView_info{};
+	imageView_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageView_info.image = image;
+	imageView_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	imageView_info.format = format;
+	imageView_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	imageView_info.subresourceRange.baseMipLevel = 0;
+	imageView_info.subresourceRange.levelCount = 1;
+	imageView_info.subresourceRange.baseArrayLayer = 0;
+	imageView_info.subresourceRange.layerCount = 1;
 
+	VkImageView imageView;
+	VkResult result = vkCreateImageView(deviceObj->getDevice(), &imageView_info, nullptr, &imageView);
+	if (result != VK_SUCCESS)
+	{
+		Log::error("Failed to create imageView", result);
+		return NULL;
+	}
+	return imageView;
+}
 
 void SwapChain::recreateSwapChain()
 {	
@@ -135,8 +137,9 @@ void SwapChain::querySwapchainSupport()
 	if (_details.capabilities.currentExtent.height != UINT32_MAX && _details.capabilities.currentExtent.width != UINT32_MAX)
 	{
 		Log::message("Taille de la surface :");
-		cout << _details.capabilities.currentExtent.width << endl;
-		cout << _details.capabilities.currentExtent.height << endl;
+		
+		cout << "			hauteur"<<_details.capabilities.currentExtent.height << endl;
+		cout << "			hauteur"<<_details.capabilities.currentExtent.width << endl;
 	}
 	else
 	{

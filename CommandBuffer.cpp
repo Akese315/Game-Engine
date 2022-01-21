@@ -80,6 +80,7 @@ void CommandBuffer::createCommandBuffer()
 void CommandBuffer::commandBufferLoad(VkRenderPass* renderpass, VkPipeline* graphicPipeline, VkPipelineLayout* layoutPipeline,
 VkBuffer* vertex,VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorSet> descriptorSetList)
 {
+	
 	for (size_t i = 0; i < _commandBuffer.size(); i++)
 	{
 
@@ -99,7 +100,7 @@ VkBuffer* vertex,VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorS
 		renderPassInfo.sType				= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass			= *renderpass;
 		renderPassInfo.framebuffer			= _swapChainFramebuffers[i];
-		VkClearValue clearColor				= { 0.0f, 0.0f, 0.0f, 1.0f };
+		VkClearValue clearColor				= { 0.0f, 0.0f, 0.0f, 0.75f };
 		renderPassInfo.clearValueCount		= 1;
 		renderPassInfo.pClearValues			= &clearColor;
 		renderPassInfo.renderArea.extent	= *extent;
@@ -119,6 +120,8 @@ VkBuffer* vertex,VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorS
 		if (error != VK_SUCCESS) {
 			Log::error("Failed to load the command buffer", error);
 		}
+		string number = std::to_string(i);
+		Log::message<string>(string{ "Envoie du commandbuffer numero : " }+number);
 	}
 
 }
@@ -139,54 +142,16 @@ void CommandBuffer::createCommandPoolForTemp()
 
 void CommandBuffer::copyBuffer(StructBufferObject* srcBuffer, StructBufferObject* destBuffer, VkDeviceSize size)
 {
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = _commandPoolTemp;
-	allocInfo.commandBufferCount = 1;
+	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(DeviceObj->getDevice(), &allocInfo, &commandBuffer);
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
-	if (result != VK_SUCCESS)
-	{
-		Log::error("failed to beginCommandBuffer", result);
-		return;
-	}
-	
 	VkBufferCopy copyRegion{};
 	copyRegion.srcOffset = 0; // Optionel
 	copyRegion.dstOffset = 0; // Optionel
 	copyRegion.size = size;
 	vkCmdCopyBuffer(commandBuffer, srcBuffer->buffer, destBuffer->buffer, 1, &copyRegion);
-	result = vkEndCommandBuffer(commandBuffer);
-	if (result != VK_SUCCESS)
-	{
-		Log::error("failed to end CommandBuffer", result);
-		return;
-	}
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-	
-	result = vkQueueSubmit(DeviceObj->getQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-	if (result != VK_SUCCESS)
-	{
-		Log::error("failed to submit the queue", result);
-		return;
-	}
-	result = vkQueueWaitIdle(DeviceObj->getQueue());
-	if (result != VK_SUCCESS)
-	{
-		Log::error("failed to waitIdle", result);
-		return;
-	}
+
+	endSingleTimeCommands(commandBuffer);
+
 	vkDestroyBuffer(DeviceObj->getDevice(), srcBuffer->buffer, nullptr);
 	vkFreeMemory(DeviceObj->getDevice(), srcBuffer->memory, nullptr);
 }
@@ -219,6 +184,54 @@ void CommandBuffer::createFrameBuffer()
 	Log::success("Frame buffer created !");
 }
 
+VkCommandBuffer CommandBuffer::beginSingleTimeCommands()
+{
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = _commandPool;
+	allocInfo.commandBufferCount = 1;
+	
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(DeviceObj->getDevice(), &allocInfo, &commandBuffer);
+	
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	
+	return commandBuffer;
+
+}
+
+void CommandBuffer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+	VkResult error = vkEndCommandBuffer(commandBuffer);
+	if (error != VK_SUCCESS)
+	{
+		Log::error("failed to end CommandBuffer", error);
+	}
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+
+	submitInfo.pCommandBuffers = &commandBuffer;
+	
+	error = vkQueueSubmit(DeviceObj->getQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+	if (error != VK_SUCCESS)
+	{
+		Log::error("Failed to subit to the queue", error);
+	}
+	error = vkQueueWaitIdle(DeviceObj->getQueue());
+	if (error != VK_SUCCESS)
+	{
+		Log::error("Failed to wait Idle", error);
+	}
+	
+	vkFreeCommandBuffers(DeviceObj->getDevice(), _commandPool, 1, &commandBuffer);
+
+}
 vector<VkCommandBuffer> CommandBuffer::getCommandBuffer()
 {
 

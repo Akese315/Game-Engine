@@ -19,9 +19,9 @@ VkVertexInputBindingDescription vulkan_render::getBindingDescription()
 
 	return bindingDescription;
 }
-array<VkVertexInputAttributeDescription, 2>	vulkan_render::getAttributeDescriptions()
+array<VkVertexInputAttributeDescription, 3>	vulkan_render::getAttributeDescriptions()
 {
-	array<VkVertexInputAttributeDescription, 2 > attributeDescriptions{};
+	array<VkVertexInputAttributeDescription, 3 > attributeDescriptions{};
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
 	attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
@@ -32,6 +32,10 @@ array<VkVertexInputAttributeDescription, 2>	vulkan_render::getAttributeDescripti
 	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributeDescriptions[1].offset = offsetof(vertexStruc, color);
 
+	attributeDescriptions[2].binding = 0;
+	attributeDescriptions[2].location = 2;
+	attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(vertexStruc, texCoord);
 
 	return attributeDescriptions;
 }
@@ -91,7 +95,7 @@ void vulkan_render::init()
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType						=	VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	inputAssembly.topology					= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	inputAssembly.topology					=	VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssembly.primitiveRestartEnable	=	VK_FALSE;
 	/*
 	
@@ -192,7 +196,7 @@ void vulkan_render::init()
 	pipelineInfo.pStages				= _shaderStages;
 	pipelineInfo.pVertexInputState		= &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState	= &inputAssembly;
-	pipelineInfo.pViewportState			= &viewportState;
+	pipelineInfo.pViewportState			= &viewportState; 
 	pipelineInfo.pRasterizationState	= &rasterizer;
 	pipelineInfo.pMultisampleState		= &multisampling;
 	pipelineInfo.pDepthStencilState		= nullptr; // Optionel
@@ -314,12 +318,21 @@ void vulkan_render::createDescriptorSetLayout()
 	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	uboLayoutBinding.pImmutableSamplers = nullptr;
 
+	VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+	samplerLayoutBinding.binding = 1;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding.pImmutableSamplers = nullptr;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	
+	std::array<VkDescriptorSetLayoutBinding, 2> bindings =	{ uboLayoutBinding, samplerLayoutBinding };
+	
 
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = 1;
-	layoutInfo.pBindings = &uboLayoutBinding;
+	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+	layoutInfo.pBindings = bindings.data();
 
 
 	VkResult result = vkCreateDescriptorSetLayout(deviceObj->getDevice(), &layoutInfo, nullptr, &_descriptorSetLayout);
