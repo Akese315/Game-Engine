@@ -161,9 +161,14 @@ void CommandBuffer::copyBuffer(StructBufferObject* srcBuffer, StructBufferObject
 void CommandBuffer::createFrameBuffer()
 {
 	_swapChainFramebuffers.resize(swapchainObj->getSwapChainImageView().size());
-
+	
 	for (size_t i = 0; i < _swapChainFramebuffers.size(); i++) {
-		VkImageView attachments[] = { (swapchainObj->getSwapChainImageView()).at(i) };
+
+		std::array<VkImageView, 2> attachments = {
+			swapchainObj->getSwapChainImageView()[i],
+			depthImageView
+		};
+
 
 
 		VkFramebufferCreateInfo framebufferInfo{};

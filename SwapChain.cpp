@@ -57,18 +57,18 @@ void SwapChain::InitSwapImage()
 
 	for (uint32_t i = 0; i < _swapChainImages.size(); i++)
 	{
-		_swapchainImageView[i] = createImageView(_swapChainImages[i], _SwapchainFormat.format); 
+		_swapchainImageView[i] = createImageView(_swapChainImages[i], _SwapchainFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
 		Log::success("SwapchainImage created ");
 	}
 }
-VkImageView SwapChain::createImageView(VkImage image, VkFormat format)
+VkImageView SwapChain::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
 	VkImageViewCreateInfo imageView_info{};
 	imageView_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageView_info.image = image;
+	imageView_info.subresourceRange.aspectMask = aspectFlags;
 	imageView_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	imageView_info.format = format;
-	imageView_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	imageView_info.subresourceRange.baseMipLevel = 0;
 	imageView_info.subresourceRange.levelCount = 1;
 	imageView_info.subresourceRange.baseArrayLayer = 0;

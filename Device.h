@@ -13,7 +13,8 @@ public:
 	VkDevice getDevice();
 	uint32_t getGraphics_family_index();
 	VkQueue getQueue();
-	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);	
+	VkFormat findDepthFormat();
 	
 
 private:
@@ -22,6 +23,8 @@ private:
 	void init_QueueFamily();
 	void getQueueFamily();
 	void isDeviceSuitable(VkPhysicalDevice device);
+	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	bool hasStencilComponent(VkFormat format);
 
 	VkPhysicalDeviceProperties		_gpu_properties{};
 	vector<const char*>				_extNames;
