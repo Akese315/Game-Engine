@@ -11,14 +11,15 @@ Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* comman
 	descriptorSetLayout = rendererObj->getDescriptorSetLayout();
 
 	//initialition : Les buffers de verticies et d'index sont créer mais attendent que le commandBuffer les demande.
-	createTextureImage();
-	createTextureImageView();
+	createTextureImage();	
 	createTextureSampler();
+	createDepthResources();
 	createVertexBuffer();
 	createIndexBuffer();	
 	createUniformBuffers();
 	createDescriptorPool();
 	createDescriptorSets();
+	
 	
 
 	CommandBufferObj->commandBufferLoad(rendererObj->getRenderPass(),
@@ -250,7 +251,7 @@ void Vertex::createTextureImage()
 {
 	
 	int texWidth, texHeight, texChannels;
-	stbi_uc * pixels = stbi_load("textures/default.jpg", &texWidth,	&texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc * pixels = stbi_load("textures/idk.jpg", &texWidth,	&texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 	Log::message<uint64_t>(imageSize);
 		if (!pixels)
@@ -292,6 +293,9 @@ void Vertex::createTextureImage()
 		transitionImageLayout(imageBuffer.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		vkDestroyBuffer(deviceObj->getDevice(), stagingBuffer.buffer, nullptr);
 		vkFreeMemory(deviceObj->getDevice(), stagingBuffer.memory, nullptr);
+		textureImageView = swapchainObj->createImageView(imageBuffer.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+		
+
 }
 
 void Vertex::transitionImageLayout(VkImage image, VkFormat format,	VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -312,9 +316,6 @@ void Vertex::transitionImageLayout(VkImage image, VkFormat format,	VkImageLayout
 
 	barrier.srcAccessMask = 0; // TODO
 	barrier.dstAccessMask = 0; // TODO
-
-	
-
 	
 	
 		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout ==	VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
@@ -336,7 +337,7 @@ void Vertex::transitionImageLayout(VkImage image, VkFormat format,	VkImageLayout
 		}
 
 		vkCmdPipelineBarrier(commandBuffer,	sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
+		Log::message<string>("pipeline BARRIER set");
 		CommandBufferObj->endSingleTimeCommands(commandBuffer);
 }
 
@@ -381,7 +382,7 @@ void Vertex::createImage(uint32_t width, uint32_t height, VkFormat format, VkIma
 void Vertex::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
 	VkCommandBuffer commandBuffer = CommandBufferObj->beginSingleTimeCommands();
 	
-	CommandBufferObj->endSingleTimeCommands(commandBuffer);
+	
 	VkBufferImageCopy region{};
 	region.bufferOffset = 0;
 	region.bufferRowLength = 0;
@@ -395,19 +396,10 @@ void Vertex::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, u
 	region.imageOffset = { 0, 0, 0 };
 	region.imageExtent = { width, height,1 };
 	vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, & region);
-	
+	Log::message("buffer copied into imageBuffer");
+	CommandBufferObj->endSingleTimeCommands(commandBuffer);
 }
 
-void Vertex::createTextureImageView()
-{
-	textureImageView = swapchainObj->createImageView(imageBuffer.image, VK_FORMAT_R8G8B8A8_SRGB);
-	if (textureImageView == NULL)
-	{
-		Log::error("failed to create Image View for Image");
-
-	}
-	Log::success("success to create Image view for Image");
-}
 
 void Vertex::createTextureSampler()
 {
@@ -430,6 +422,18 @@ void Vertex::createTextureSampler()
 		Log::error("Failed to create Image Sampler", result);
 	}
 }
+
+void Vertex::createDepthResources()
+{
+	VkFormat depthFormat = deviceObj->findDepthFormat();
+
+	createImage(swapchainObj->getCurrentWindowSize().width, swapchainObj->getCurrentWindowSize().height,
+		depthFormat, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthBuffer);
+	depthImageView = swapchainObj->createImageView(depthBuffer.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_DEPTH_BIT);
+}
+
 
 
 void Vertex::recreateVertexObj()

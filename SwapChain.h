@@ -49,7 +49,7 @@ class SwapChain{
 		VkExtent2D					getCurrentWindowSize();
 		void						recreateSwapChain();
 		void						cleanUp();
-		VkImageView					createImageView(VkImage image, VkFormat format);
+		VkImageView					createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 		
 		
