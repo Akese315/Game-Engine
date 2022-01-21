@@ -167,7 +167,7 @@ void CommandBuffer::createFrameBuffer()
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType				= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass			= /*renderer->getRenderPass()*/NULL;
+		framebufferInfo.renderPass			= renderer->getRenderPass();
 		framebufferInfo.attachmentCount		= 1;
 		framebufferInfo.pAttachments		= attachments;
 		framebufferInfo.width				= extent->width;
