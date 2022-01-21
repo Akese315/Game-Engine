@@ -13,7 +13,7 @@ class CommandBuffer
 	
 
 public:
-										CommandBuffer(Device* DeviceObj, SwapChain* swapchainObj, VkExtent2D* extent);
+										CommandBuffer(Device* DeviceObj, SwapChain* swapchainObj, VkExtent2D* extent, vulkan_render *renderer);
 										~CommandBuffer();
 	vector<VkCommandBuffer>				getCommandBuffer();
 	void								recreateCommandObj();
@@ -47,5 +47,6 @@ private:
 	Device*								DeviceObj;
 	SwapChain*							swapchainObj;
 	VkExtent2D*							extent;
+	vulkan_render*						renderer;
 };
 

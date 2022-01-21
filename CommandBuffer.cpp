@@ -1,11 +1,12 @@
 #include "CommandBuffer.h"
 
 
-CommandBuffer::CommandBuffer(Device* DeviceObj, SwapChain* swapchainObj, VkExtent2D* extent)
+CommandBuffer::CommandBuffer(Device* DeviceObj, SwapChain* swapchainObj, VkExtent2D* extent, vulkan_render *renderer)
 {
 	this->DeviceObj = DeviceObj;
 	this->swapchainObj = swapchainObj;
 	this->extent = extent;	
+	this->renderer = renderer;
 	
 	init();
 }
@@ -167,7 +168,7 @@ void CommandBuffer::createFrameBuffer()
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType				= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass			= /*renderer->getRenderPass()*/NULL;
+		framebufferInfo.renderPass			= *renderer->getRenderPass();
 		framebufferInfo.attachmentCount		= 1;
 		framebufferInfo.pAttachments		= attachments;
 		framebufferInfo.width				= extent->width;

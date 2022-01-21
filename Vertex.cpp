@@ -336,7 +336,7 @@ void Vertex::transitionImageLayout(VkImage image, VkFormat format,	VkImageLayout
 		}
 
 		vkCmdPipelineBarrier(commandBuffer,	sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
+		Log::message<string>("pipeline BARRIER set");
 		CommandBufferObj->endSingleTimeCommands(commandBuffer);
 }
 
@@ -381,7 +381,7 @@ void Vertex::createImage(uint32_t width, uint32_t height, VkFormat format, VkIma
 void Vertex::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
 	VkCommandBuffer commandBuffer = CommandBufferObj->beginSingleTimeCommands();
 	
-	CommandBufferObj->endSingleTimeCommands(commandBuffer);
+	
 	VkBufferImageCopy region{};
 	region.bufferOffset = 0;
 	region.bufferRowLength = 0;
@@ -395,7 +395,8 @@ void Vertex::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, u
 	region.imageOffset = { 0, 0, 0 };
 	region.imageExtent = { width, height,1 };
 	vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, & region);
-	
+	Log::message("buffer copied into imageBuffer");
+	CommandBufferObj->endSingleTimeCommands(commandBuffer);
 }
 
 void Vertex::createTextureImageView()

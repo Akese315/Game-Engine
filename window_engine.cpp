@@ -271,7 +271,7 @@ void window_engine::deInitVertexBuffer()
 
 void window_engine::CommandBufferInit()
 {
-	commandBufferObj = new CommandBuffer(this->deviceObj, this->swapchainObj, &this->_swapchainExtent);
+	commandBufferObj = new CommandBuffer(this->deviceObj, this->swapchainObj, &this->_swapchainExtent, renderer);
 }
 
 void window_engine::CommandBufferDeInit()
