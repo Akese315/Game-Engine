@@ -21,7 +21,8 @@ Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* comman
 	createDescriptorSets();
 	
 	
-
+	CommandBufferObj->createFrameBuffer(depthImageView);
+	CommandBufferObj->createCommandBuffer();
 	CommandBufferObj->commandBufferLoad(rendererObj->getRenderPass(),
 		rendererObj->getGraphicsPipeline(),
 		rendererObj->getPipelineLayout(),

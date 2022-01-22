@@ -20,10 +20,9 @@ CommandBuffer::~CommandBuffer()
 
 void CommandBuffer::init()
 {
-	createFrameBuffer();//#1
 	createCommandPoolForTemp();//il faut créer le commandPool temporaire avant car il doit envoyer les données (vertices et index)
 	createCommandPool();//#2
-	createCommandBuffer();//#3
+
 }
 
 void CommandBuffer::recreateCommandObj()
@@ -64,6 +63,7 @@ void CommandBuffer::createCommandBuffer()
 {
 	_commandBuffer.resize(_swapChainFramebuffers.size());
 
+	
 
 	VkCommandBufferAllocateInfo command_buffer_allocate_info{};
 	command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -76,7 +76,7 @@ void CommandBuffer::createCommandBuffer()
 	{
 		Log::error("Failed to allocate command buffers", error);
 	}
-
+	Log::success("Succeed to create command Buffer");
 }
 void CommandBuffer::commandBufferLoad(VkRenderPass* renderpass, VkPipeline* graphicPipeline, VkPipelineLayout* layoutPipeline,
 VkBuffer* vertex,VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorSet> descriptorSetList)
@@ -97,16 +97,19 @@ VkBuffer* vertex,VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorS
 			Log::error("erreur au début de l'enregistrement d'un command buffer!", error);
 		}
 
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType				= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass			= *renderpass;
 		renderPassInfo.framebuffer			= _swapChainFramebuffers[i];
 		VkClearValue clearColor				= { 0.0f, 0.0f, 0.0f, 0.75f };
-		renderPassInfo.clearValueCount		= 1;
-		renderPassInfo.pClearValues			= &clearColor;
 		renderPassInfo.renderArea.extent	= *extent;
-
-		VkDeviceSize offsets[] = { 0 };
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();
+		VkDeviceSize offsets[] = { 0, 0};
 
 
 		vkCmdBeginRenderPass(_commandBuffer[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -158,7 +161,7 @@ void CommandBuffer::copyBuffer(StructBufferObject* srcBuffer, StructBufferObject
 }
 
 
-void CommandBuffer::createFrameBuffer()
+void CommandBuffer::createFrameBuffer(VkImageView depthImageView)
 {
 	_swapChainFramebuffers.resize(swapchainObj->getSwapChainImageView().size());
 	
@@ -167,6 +170,7 @@ void CommandBuffer::createFrameBuffer()
 		std::array<VkImageView, 2> attachments = {
 			swapchainObj->getSwapChainImageView()[i],
 			depthImageView
+
 		};
 
 
@@ -174,8 +178,8 @@ void CommandBuffer::createFrameBuffer()
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType				= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass			= *renderer->getRenderPass();
-		framebufferInfo.attachmentCount		= 1;
-		framebufferInfo.pAttachments		= attachments;
+		framebufferInfo.attachmentCount		= static_cast<uint32_t>(attachments.size());
+		framebufferInfo.pAttachments		= attachments.data();
 		framebufferInfo.width				= extent->width;
 		framebufferInfo.height				= extent->height;
 		framebufferInfo.layers				= 1;
@@ -187,7 +191,7 @@ void CommandBuffer::createFrameBuffer()
 
 		}
 	}
-	Log::success("Frame buffer created !");
+		Log::success("Frame buffer created !");
 }
 
 VkCommandBuffer CommandBuffer::beginSingleTimeCommands()

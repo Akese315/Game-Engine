@@ -175,6 +175,18 @@ void vulkan_render::init()
 	colorBlending.blendConstants[2] = 0.0f; // Optionel
 	colorBlending.blendConstants[3] = 0.0f; // Optionel
 
+	VkPipelineDepthStencilStateCreateInfo depthStencil{};
+	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencil.depthTestEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = VK_TRUE;
+	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStencil.depthBoundsTestEnable = VK_FALSE;
+	depthStencil.minDepthBounds = 0.0f; // Optionel
+	depthStencil.maxDepthBounds = 1.0f; // Optionel
+	depthStencil.stencilTestEnable = VK_FALSE;
+	//depthStencil.front{}; // Optionel
+	//depthStencil.back{}; // Optionel
+
 	VkDynamicState dynamicStates[] = {
 		VK_DYNAMIC_STATE_VIEWPORT,
 		VK_DYNAMIC_STATE_LINE_WIDTH
@@ -207,6 +219,7 @@ void vulkan_render::init()
 	pipelineInfo.subpass				= 0;
 	pipelineInfo.basePipelineHandle		= NULL; // Optionel
 	pipelineInfo.basePipelineIndex		= -1; // Optionel
+	pipelineInfo.pDepthStencilState		= &depthStencil;
 
 	
 	
@@ -320,7 +333,7 @@ void vulkan_render::createRenderPass()
 	renderPassInfo.pSubpasses = &subpass;
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
-
+	
 	VkResult error = vkCreateRenderPass(deviceObj->getDevice(), &renderPassInfo, nullptr, &_renderPass);
 	if (error != VK_SUCCESS) {
 		Log::error("Failed to create RenderPass", error);

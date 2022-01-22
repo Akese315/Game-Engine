@@ -23,7 +23,8 @@ public:
 										VkBuffer* vertex, VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorSet> descriptorSetList);
 	VkCommandBuffer						beginSingleTimeCommands();
 	void								endSingleTimeCommands(VkCommandBuffer commandBuffer);
-	
+	void								createFrameBuffer(VkImageView depthImageView);
+	void								createCommandBuffer();
 
 	
 	
@@ -31,10 +32,7 @@ public:
 	
 
 private:
-	void								createCommandPool();
-	void								createFrameBuffer();
-	void								createCommandBuffer();
-	
+	void								createCommandPool();	
 	void								createCommandPoolForTemp();
 	void								init();
 	
@@ -48,5 +46,6 @@ private:
 	SwapChain*							swapchainObj;
 	VkExtent2D*							extent;
 	vulkan_render*						renderer;
+	StructImageObject					depthBuffer;
 };
 
