@@ -1,6 +1,6 @@
 #pragma once
 #define STB_IMAGE_IMPLEMENTATION
-
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <vulkan/include/vulkan.h>
@@ -62,24 +62,35 @@ private:
 	VkSampler textureSampler;
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
-	
+	VkImageView depthImageView;
+
+	//const std::string MODEL_PATH = "models/nissan.obj";
+	//const std::string TEXTURE_PATH = "textures/nissan.png";
 	
 
 	const vector<vertexStruc> vertices =
 	{
-		{{-0.5f, -0.5f}, {0.0f, 0.5f, 1.0f},{0.0f,0.0f}},
-		{ {0.5f, -0.5f}, {0.5f, 0.5f, 0.0f},{1.0f,0.0f}},
-		{ {0.5f, 0.5f}, {0.5f, 0.5f, 0.0f},{1.0f,1.0f}},
-		{ {-0.5f, 0.5f}, {0.0f, 0.5f, 1.0f},{0.0f,1.0f}}
+		{{-0.5f, -0.5f,	0.0f}, {0.0f, 0.5f, 1.0f},{0.0f,0.0f}},
+		{ {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f},{1.0f,0.0f}},
+		{ {0.5f, 0.5f, 0.0f}, {0.5f, 0.5f, 0.0f},{1.0f,1.0f}},
+		{ {-0.5f, 0.5f,	0.0f}, {0.0f, 0.5f, 1.0f},{0.0f,1.0f}},
+		{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+		{ {0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+		{ {0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+		{ {-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 	};
 	// vertex (coordonnées et couleurs)
-	const vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0 };
+	const vector<uint16_t> indices = 
+	{ 0, 1, 2, 2, 3, 0, 
+	  4, 5, 6, 6, 7, 4
+	};
 
 
 	StructBufferObject vertexBufferStruct;
 	StructBufferObject indexBufferStruct;
 	StructImageObject imageBuffer;
 	UniformBufferObject uniformBuffer;
+	StructImageObject depthBuffer;
 	//déclaration de la structure bufferStruc du vertex et des index.
 
 	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -90,6 +101,7 @@ private:
 	void createDescriptorSets();
 	void createTextureImage();
 	void createTextureImageView();
+	void createDepthResources();
 	void createTextureSampler();
 	void transitionImageLayout(VkImage image, VkFormat format,
 		VkImageLayout oldLayout, VkImageLayout newLayout);

@@ -14,7 +14,9 @@ public:
 	uint32_t getGraphics_family_index();
 	VkQueue getQueue();
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-	
+	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	VkFormat findDepthFormat();
+	bool hasStencilComponent(VkFormat format);
 
 private:
 	void ShowGPUprops();

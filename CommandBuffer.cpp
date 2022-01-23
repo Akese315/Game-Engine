@@ -8,6 +8,7 @@ CommandBuffer::CommandBuffer(Device* DeviceObj, SwapChain* swapchainObj, VkExten
 	this->extent = extent;	
 	this->renderer = renderer;
 	
+	createCommandPool();//#2
 	init();
 }
 
@@ -20,10 +21,7 @@ CommandBuffer::~CommandBuffer()
 
 void CommandBuffer::init()
 {
-	createFrameBuffer();//#1
-	createCommandPoolForTemp();//il faut créer le commandPool temporaire avant car il doit envoyer les données (vertices et index)
-	createCommandPool();//#2
-	createCommandBuffer();//#3
+	createCommandPoolForTemp();//il faut créer le commandPool temporaire avant car il doit envoyer les données (vertices et index)	
 }
 
 void CommandBuffer::recreateCommandObj()
@@ -97,13 +95,16 @@ VkBuffer* vertex,VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorS
 			Log::error("erreur au début de l'enregistrement d'un command buffer!", error);
 		}
 
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType				= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass			= *renderpass;
 		renderPassInfo.framebuffer			= _swapChainFramebuffers[i];
-		VkClearValue clearColor				= { 0.0f, 0.0f, 0.0f, 0.75f };
-		renderPassInfo.clearValueCount		= 1;
-		renderPassInfo.pClearValues			= &clearColor;
+		renderPassInfo.clearValueCount		= static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues			= clearValues.data();
 		renderPassInfo.renderArea.extent	= *extent;
 
 		VkDeviceSize offsets[] = { 0 };
@@ -158,19 +159,23 @@ void CommandBuffer::copyBuffer(StructBufferObject* srcBuffer, StructBufferObject
 }
 
 
-void CommandBuffer::createFrameBuffer()
+void CommandBuffer::createFrameBuffer(VkImageView depthImageView)
 {
 	_swapChainFramebuffers.resize(swapchainObj->getSwapChainImageView().size());
 
 	for (size_t i = 0; i < _swapChainFramebuffers.size(); i++) {
-		VkImageView attachments[] = { (swapchainObj->getSwapChainImageView()).at(i) };
+		std::array<VkImageView, 2> attachments = {
+			(swapchainObj->getSwapChainImageView()).at(i),
+			depthImageView
+
+		};
 
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType				= VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass			= *renderer->getRenderPass();
-		framebufferInfo.attachmentCount		= 1;
-		framebufferInfo.pAttachments		= attachments;
+		framebufferInfo.attachmentCount		= static_cast<uint32_t>(attachments.size());
+		framebufferInfo.pAttachments		= attachments.data();
 		framebufferInfo.width				= extent->width;
 		framebufferInfo.height				= extent->height;
 		framebufferInfo.layers				= 1;

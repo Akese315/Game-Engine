@@ -23,8 +23,8 @@ public:
 										VkBuffer* vertex, VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorSet> descriptorSetList);
 	VkCommandBuffer						beginSingleTimeCommands();
 	void								endSingleTimeCommands(VkCommandBuffer commandBuffer);
-	
-
+	void								createFrameBuffer(VkImageView depthImageView);
+	void								createCommandBuffer();
 	
 	
 
@@ -32,8 +32,8 @@ public:
 
 private:
 	void								createCommandPool();
-	void								createFrameBuffer();
-	void								createCommandBuffer();
+	
+	
 	
 	void								createCommandPoolForTemp();
 	void								init();

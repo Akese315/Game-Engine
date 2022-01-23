@@ -11,6 +11,7 @@ Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* comman
 	descriptorSetLayout = rendererObj->getDescriptorSetLayout();
 
 	//initialition : Les buffers de verticies et d'index sont créer mais attendent que le commandBuffer les demande.
+	createDepthResources();
 	createTextureImage();
 	createTextureImageView();
 	createTextureSampler();
@@ -21,6 +22,8 @@ Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* comman
 	createDescriptorSets();
 	
 
+	CommandBufferObj->createFrameBuffer(depthImageView);
+	CommandBufferObj->createCommandBuffer();
 	CommandBufferObj->commandBufferLoad(rendererObj->getRenderPass(),
 		rendererObj->getGraphicsPipeline(),
 		rendererObj->getPipelineLayout(),
@@ -250,7 +253,7 @@ void Vertex::createTextureImage()
 {
 	
 	int texWidth, texHeight, texChannels;
-	stbi_uc * pixels = stbi_load("textures/default.jpg", &texWidth,	&texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc * pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 	Log::message<uint64_t>(imageSize);
 		if (!pixels)
@@ -401,7 +404,7 @@ void Vertex::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, u
 
 void Vertex::createTextureImageView()
 {
-	textureImageView = swapchainObj->createImageView(imageBuffer.image, VK_FORMAT_R8G8B8A8_SRGB);
+	textureImageView = swapchainObj->createImageView(imageBuffer.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	if (textureImageView == NULL)
 	{
 		Log::error("failed to create Image View for Image");
@@ -432,13 +435,28 @@ void Vertex::createTextureSampler()
 	}
 }
 
+void Vertex::createDepthResources() {
+	
+	VkFormat depthFormat = deviceObj->findDepthFormat();
+	createImage(swapchainObj->getCurrentWindowSize().width, swapchainObj->getCurrentWindowSize().height,
+		depthFormat, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthBuffer);
+	depthImageView = swapchainObj->createImageView(depthBuffer.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+}
+
+
 
 void Vertex::recreateVertexObj()
 {
+	createDepthResources();
 	descriptorSetLayout = rendererObj->getDescriptorSetLayout();
 	createUniformBuffers();
 	createDescriptorPool();
 	createDescriptorSets();
+
+	CommandBufferObj->createFrameBuffer(depthImageView);
+	CommandBufferObj->createCommandBuffer();
 	CommandBufferObj->commandBufferLoad(rendererObj->getRenderPass(),
 		rendererObj->getGraphicsPipeline(),
 		rendererObj->getPipelineLayout(),
@@ -466,6 +484,11 @@ Vertex::~Vertex()
 	cleanUp();
 	vkDestroySampler(deviceObj->getDevice(), textureSampler, nullptr);
 	vkDestroyImageView(deviceObj->getDevice(), textureImageView, nullptr);
+
+	vkDestroyImageView(deviceObj->getDevice(), depthImageView, nullptr);
+
+	vkDestroyImage(deviceObj->getDevice(), depthBuffer.image, nullptr);
+	vkFreeMemory(deviceObj->getDevice(), depthBuffer.memory, nullptr);
 
 	vkDestroyImage(deviceObj->getDevice(), imageBuffer.image, nullptr);
 	vkFreeMemory(deviceObj->getDevice(), imageBuffer.memory, nullptr);

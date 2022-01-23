@@ -24,7 +24,7 @@ array<VkVertexInputAttributeDescription, 3>	vulkan_render::getAttributeDescripti
 	array<VkVertexInputAttributeDescription, 3 > attributeDescriptions{};
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
-	attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributeDescriptions[0].location = offsetof(vertexStruc, pos);
 
 	attributeDescriptions[1].binding = 0;
@@ -164,6 +164,20 @@ void vulkan_render::init()
 	colorBlendAttachment.dstAlphaBlendFactor	= VK_BLEND_FACTOR_ZERO; //	Optionel
 	colorBlendAttachment.alphaBlendOp			= VK_BLEND_OP_ADD; // Optionnel
 
+	VkPipelineDepthStencilStateCreateInfo depthStencil{};
+	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencil.depthTestEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = VK_TRUE;
+	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStencil.depthBoundsTestEnable = VK_FALSE;
+	depthStencil.minDepthBounds = 0.0f; // Optionel
+	depthStencil.maxDepthBounds = 1.0f; // Optionel
+	depthStencil.stencilTestEnable = VK_FALSE;
+	//depthStencil.front{}; // Optionel
+	//depthStencil.back{}; // Optionel
+
+
+
 	VkPipelineColorBlendStateCreateInfo colorBlending{};
 	colorBlending.sType				=	VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	colorBlending.logicOpEnable		=	VK_FALSE;
@@ -175,10 +189,15 @@ void vulkan_render::init()
 	colorBlending.blendConstants[2] = 0.0f; // Optionel
 	colorBlending.blendConstants[3] = 0.0f; // Optionel
 
+	
+
+
+
 	VkDynamicState dynamicStates[] = {
 		VK_DYNAMIC_STATE_VIEWPORT,
 		VK_DYNAMIC_STATE_LINE_WIDTH
 		};
+
 
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType				=VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -199,7 +218,7 @@ void vulkan_render::init()
 	pipelineInfo.pViewportState			= &viewportState; 
 	pipelineInfo.pRasterizationState	= &rasterizer;
 	pipelineInfo.pMultisampleState		= &multisampling;
-	pipelineInfo.pDepthStencilState		= nullptr; // Optionel
+	pipelineInfo.pDepthStencilState		= &depthStencil; // Optionel
 	pipelineInfo.pColorBlendState		= &colorBlending;
 	pipelineInfo.pDynamicState			= nullptr;
 	pipelineInfo.layout					= _pipelineLayout;
@@ -207,6 +226,7 @@ void vulkan_render::init()
 	pipelineInfo.subpass				= 0;
 	pipelineInfo.basePipelineHandle		= NULL; // Optionel
 	pipelineInfo.basePipelineIndex		= -1; // Optionel
+
 
 	
 	
@@ -288,19 +308,40 @@ void vulkan_render::createRenderPass()
 	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+	VkAttachmentReference depthAttachmentRef{};
+	depthAttachmentRef.attachment = 1;
+	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentDescription depthAttachment{};
+	depthAttachment.format = deviceObj->findDepthFormat();
+	depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	depthAttachment.finalLayout =	VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 	VkSubpassDescription subpass{};
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &colorAttachmentRef;
+	subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+	
+
+	std::array<VkAttachmentDescription, 2> attachments =
+	{ colorAttachment, depthAttachment };
 
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());;
+	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
+
 	VkResult error = vkCreateRenderPass(deviceObj->getDevice(), &renderPassInfo, nullptr, &_renderPass);
 	if (error != VK_SUCCESS) {
 		Log::error("Failed to create RenderPass", error);
