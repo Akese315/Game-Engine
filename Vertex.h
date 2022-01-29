@@ -1,5 +1,6 @@
 #pragma once
 #define STB_IMAGE_IMPLEMENTATION
+#define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -14,6 +15,11 @@
 #include "Device.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
+#include <unordered_map>
+#include <glm/gtx/hash.hpp>
+
+
+
 
 
 
@@ -64,33 +70,20 @@ private:
 	VkPipelineStageFlags destinationStage;
 	VkImageView depthImageView;
 
-	//const std::string MODEL_PATH = "models/nissan.obj";
-	//const std::string TEXTURE_PATH = "textures/nissan.png";
+	const std::string MODEL_PATH = "model/earth.obj";
+	const std::string TEXTURE_PATH = "textures/Diffuse_2K.png";
 	
 
-	const vector<vertexStruc> vertices =
-	{
-		{{-0.5f, -0.5f,	0.0f}, {0.0f, 0.5f, 1.0f},{0.0f,0.0f}},
-		{ {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f},{1.0f,0.0f}},
-		{ {0.5f, 0.5f, 0.0f}, {0.5f, 0.5f, 0.0f},{1.0f,1.0f}},
-		{ {-0.5f, 0.5f,	0.0f}, {0.0f, 0.5f, 1.0f},{0.0f,1.0f}},
-		{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-		{ {0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-		{ {0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-		{ {-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-	};
+	vector<vertexStruc> vertices;	
 	// vertex (coordonnées et couleurs)
-	const vector<uint16_t> indices = 
-	{ 0, 1, 2, 2, 3, 0, 
-	  4, 5, 6, 6, 7, 4
-	};
-
+	vector<uint32_t> indices;
 
 	StructBufferObject vertexBufferStruct;
 	StructBufferObject indexBufferStruct;
 	StructImageObject imageBuffer;
 	UniformBufferObject uniformBuffer;
 	StructImageObject depthBuffer;
+	std::unordered_map<vertexStruc, uint32_t> uniqueVertices{};
 	//déclaration de la structure bufferStruc du vertex et des index.
 
 	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -103,12 +96,14 @@ private:
 	void createTextureImageView();
 	void createDepthResources();
 	void createTextureSampler();
+	void loadModel();
 	void transitionImageLayout(VkImage image, VkFormat format,
 		VkImageLayout oldLayout, VkImageLayout newLayout);
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t
 		width, uint32_t height);
 	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, StructImageObject& imageStruct);
 	
+
 };
 
 

@@ -20,7 +20,7 @@ public:
 	void								copyBuffer(StructBufferObject* srcBuffer, StructBufferObject* destBuffer, VkDeviceSize size);
 	void								cleanUp();
 	void								commandBufferLoad(VkRenderPass* renderpass, VkPipeline* graphicPipeline, VkPipelineLayout* layoutPipeline,
-										VkBuffer* vertex, VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorSet> descriptorSetList);
+										VkBuffer* vertex, VkBuffer* index, vector<uint32_t> indices, vector<VkDescriptorSet> descriptorSetList);
 	VkCommandBuffer						beginSingleTimeCommands();
 	void								endSingleTimeCommands(VkCommandBuffer commandBuffer);
 	void								createFrameBuffer(VkImageView depthImageView);

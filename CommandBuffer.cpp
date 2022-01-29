@@ -77,7 +77,7 @@ void CommandBuffer::createCommandBuffer()
 
 }
 void CommandBuffer::commandBufferLoad(VkRenderPass* renderpass, VkPipeline* graphicPipeline, VkPipelineLayout* layoutPipeline,
-VkBuffer* vertex,VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorSet> descriptorSetList)
+VkBuffer* vertex,VkBuffer* index, vector<uint32_t> indices, vector<VkDescriptorSet> descriptorSetList)
 {
 	
 	for (size_t i = 0; i < _commandBuffer.size(); i++)
@@ -113,7 +113,7 @@ VkBuffer* vertex,VkBuffer* index, vector<uint16_t> indices, vector<VkDescriptorS
 		vkCmdBeginRenderPass(_commandBuffer[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *graphicPipeline);		
 		vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, vertex, offsets);
-		vkCmdBindIndexBuffer(_commandBuffer[i], *index, 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindIndexBuffer(_commandBuffer[i], *index, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(_commandBuffer[i],VK_PIPELINE_BIND_POINT_GRAPHICS, *layoutPipeline, 0, 1, &descriptorSetList[i], 0, nullptr);
 		vkCmdDrawIndexed(_commandBuffer[i],static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 		vkCmdEndRenderPass(_commandBuffer[i]);

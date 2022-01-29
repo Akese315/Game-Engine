@@ -1,5 +1,8 @@
 #include "Vertex.h"
 #include <GLFW/stb_image.h>
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <GLFW/tiny_obj_loader.h>
+
 
 Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* commandBufferObj, vulkan_render* renderer) {
 	this->deviceObj = deviceObj;
@@ -15,6 +18,7 @@ Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* comman
 	createTextureImage();
 	createTextureImageView();
 	createTextureSampler();
+	loadModel();
 	createVertexBuffer();
 	createIndexBuffer();	
 	createUniformBuffers();
@@ -156,10 +160,10 @@ void Vertex::updateUniformBuffer(uint32_t currentImage)
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, chrono::seconds::period>(currentTime - startTime).count();
 
-		uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(144.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		//le premier paramètre indique le model, le deuxième permet de faire une rotation de 90° en fonction du temps
 		// et le dernier permet d'indiquer l'axe de rotation
-		uniformBuffer.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f,0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		uniformBuffer.view = glm::lookAt(glm::vec3(7.0f, 7.0f, 0.0f), glm::vec3(0.0f,0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		// le premier paramètre : la position de l'oeil(caméra)
 		//le deuxième : la position de la cible (ce que l'on regarde) inclinaison
 		//le dernier est l'axe de la hauteur
@@ -445,6 +449,59 @@ void Vertex::createDepthResources() {
 	depthImageView = swapchainObj->createImageView(depthBuffer.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
+void Vertex::loadModel()
+{
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string warn, err;
+
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str())) {
+		Log::error(warn + err);
+	}
+
+	
+
+	for (const auto& shape : shapes) {
+			
+		for (const auto& index : shape.mesh.indices) {
+			vertexStruc vertex{};
+
+			if (index.vertex_index >= 0)
+			{
+				vertex.pos = {
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
+				};
+			}
+			
+			if (index.texcoord_index >= 0)
+			{
+				vertex.texCoord = {
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
+			}
+			vertex.color = { 1.0f, 1.0f, 1.0f };
+
+			if (uniqueVertices.count(vertex) == 0) {
+				
+				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				vertices.push_back(vertex);
+			
+			}
+			
+			indices.push_back(uniqueVertices[vertex]);
+			
+		}
+		
+	}
+	Log::message(string{ "Number of unique vertices : " }+ std::to_string(indices.size()));
+	Log::message("object Loaded");
+}
+
+
 
 
 void Vertex::recreateVertexObj()
@@ -467,6 +524,8 @@ void Vertex::recreateVertexObj()
 
 void Vertex::cleanUp()
 {
+	uniqueVertices.clear();
+
 	for (size_t i = 0; i < swapchainObj->getSwapchainImage().size(); i++) {
 		vkDestroyBuffer(deviceObj->getDevice(), uniformBuffers[i], nullptr);
 		vkFreeMemory(deviceObj->getDevice(), uniformBuffersMemory[i], nullptr);
