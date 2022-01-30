@@ -160,14 +160,17 @@ void Vertex::updateUniformBuffer(uint32_t currentImage)
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, chrono::seconds::period>(currentTime - startTime).count();
 
-		uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(-60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		//le premier paramètre indique le model, le deuxième permet de faire une rotation de 90° en fonction du temps
 		// et le dernier permet d'indiquer l'axe de rotation
-		uniformBuffer.view = glm::lookAt(glm::vec3(7.0f, 7.0f, 0.0f), glm::vec3(0.0f,0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		// le premier paramètre : la position de l'oeil(caméra)
-		//le deuxième : la position de la cible (ce que l'on regarde) inclinaison
-		//le dernier est l'axe de la hauteur
-		uniformBuffer.proj = glm::perspective(glm::radians(45.0f),swapchainObj->getCurrentWindowSize().width / (float)swapchainObj->getCurrentWindowSize().height, 0.1f, 10.0f);
+		uniformBuffer.view = glm::lookAt(
+			glm::vec3(7.0f, 0.0f, 7.0f),// le premier paramètre : la position de l'oeil(caméra)
+			glm::vec3(0.0f,0.0f, 0.0f),//le deuxième : la position de la cible (ce que l'on regarde) inclinaison
+			glm::vec3(0.0f, 1.0f, 0.0f));//le dernier est l'axe de la hauteur
+		
+		
+		
+		uniformBuffer.proj = glm::perspective(glm::radians(110.0f),swapchainObj->getCurrentWindowSize().width / (float)swapchainObj->getCurrentWindowSize().height, 0.1f, 10.0f);
 		//donne la perspective ici de 45° et les deux autre paramètre sont le ration de la taille de l'écran (ici)
 		uniformBuffer.proj[1][1] *= -1;
 
