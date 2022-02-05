@@ -216,6 +216,7 @@ void Vertex::createDescriptorSets()
 	allocInfo.pSetLayouts = layouts.data();
 
 	descriptorSets.resize(swapchainObj->getSwapchainImage().size());
+
 	VkResult result = vkAllocateDescriptorSets(deviceObj->getDevice(), &allocInfo, descriptorSets.data());
 	if (result != VK_SUCCESS) {
 		Log::error("Erreur lors de l'allocation du descriptor sets", result);
