@@ -41,16 +41,16 @@ public:
 	void recreateVertexObj();
 	void setColor(string color);
 	void updateUniformBuffer(uint32_t currentImage);
-	StructBufferObject* getVertexBuffer() {
-		return &vertexBufferStruct;
-	}
-	StructBufferObject* getIndexBuffer() { return &indexBufferStruct; }
 	vector<VkDescriptorSet> getDescriptorSet();
 	VkDescriptorSetLayout* getDescriptorSetLayout();
 	vector<uint16_t> getIndices();
 	static VkVertexInputBindingDescription getBindingDescription();
 	static array<VkVertexInputAttributeDescription, 2>	getAttributeDescriptions();
-
+	void createIndexBuffer(StructBufferObject& indexBufferStruct,const vector<uint32_t> indices);
+	void createVertexBuffer(StructBufferObject& vertexBufferStruct,const vector<vertexStruc> vertices);
+	void loadModel(const string MODEL_PATH, vector<uint32_t>& indices, vector<vertexStruc>& vertices);
+	void createTextureImage(const string TEXTURE_FILE_NAME, StructImageObject& imageBuffer);
+	void createDescriptorSets(vector<VkDescriptorSet>& descriptorSets, vector<StructImageObject> imageBuffers);
 
 private:
 
@@ -60,43 +60,31 @@ private:
 	CommandBuffer* CommandBufferObj;
 	vulkan_render* rendererObj;
 	VkDescriptorSetLayout* descriptorSetLayout;
-	VkDescriptorPool descriptorPool;
-	vector<VkDescriptorSet> descriptorSets;
-	vector<VkBuffer> uniformBuffers;
-	vector<VkDeviceMemory> uniformBuffersMemory;
+	VkDescriptorPool descriptorPool;	
 	VkImageView textureImageView;
 	VkSampler textureSampler;
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
 	VkImageView depthImageView;
 
-	const std::string MODEL_PATH = "model/earth.obj";
-	const std::string TEXTURE_PATH = "textures/Diffuse_2K.png";
+	vector<VkBuffer> uniformBuffers;
+	vector<VkDeviceMemory> uniformBuffersMemory;
 	
 
-	vector<vertexStruc> vertices;	
-	// vertex (coordonnées et couleurs)
-	vector<uint32_t> indices;
-
-	StructBufferObject vertexBufferStruct;
-	StructBufferObject indexBufferStruct;
-	StructImageObject imageBuffer;
+	
+	
 	UniformBufferObject uniformBuffer;
 	StructImageObject depthBuffer;
-	std::unordered_map<vertexStruc, uint32_t> uniqueVertices{};
+	
 	//déclaration de la structure bufferStruc du vertex et des index.
 
-	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-	void createVertexBuffer();
-	void createUniformBuffers();
-	void createIndexBuffer();
+	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);	
+	void createUniformBuffers();	
 	void createDescriptorPool();
-	void createDescriptorSets();
-	void createTextureImage();
-	void createTextureImageView();
+	
+	void createTextureImageView(StructImageObject& imageStruct);
 	void createDepthResources();
-	void createTextureSampler();
-	void loadModel();
+	void createTextureSampler();	
 	void transitionImageLayout(VkImage image, VkFormat format,
 		VkImageLayout oldLayout, VkImageLayout newLayout);
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t

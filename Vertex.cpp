@@ -14,26 +14,12 @@ Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* comman
 	descriptorSetLayout = rendererObj->getDescriptorSetLayout();
 
 	//initialition : Les buffers de verticies et d'index sont créer mais attendent que le commandBuffer les demande.
-	createDepthResources();
-	createTextureImage();
-	createTextureImageView();
+	createDepthResources();	
 	createTextureSampler();
-	loadModel();
-	createVertexBuffer();
-	createIndexBuffer();	
 	createUniformBuffers();
 	createDescriptorPool();
-	createDescriptorSets();
-	
-
 	CommandBufferObj->createFrameBuffer(depthImageView);
 	CommandBufferObj->createCommandBuffer();
-	CommandBufferObj->commandBufferLoad(rendererObj->getRenderPass(),
-		rendererObj->getGraphicsPipeline(),
-		rendererObj->getPipelineLayout(),
-		&vertexBufferStruct.buffer,
-		&indexBufferStruct.buffer,
-		indices, descriptorSets);
 }
 
 
@@ -88,7 +74,7 @@ void Vertex::createBuffers(VkDeviceSize size, VkBufferUsageFlags usage,VkMemoryP
 	
 }
 
-void Vertex::createVertexBuffer()
+void Vertex::createVertexBuffer(StructBufferObject &vertexBufferStruct, const vector<vertexStruc> vertices)
 {	
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 	StructBufferObject stagingBuffer{};
@@ -111,7 +97,7 @@ void Vertex::createVertexBuffer()
 }
 
 
-void Vertex::createIndexBuffer()
+void Vertex::createIndexBuffer(StructBufferObject& indexBufferStruct,const vector<uint32_t> indices)
 {
 	VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 	StructBufferObject stagingBuffer{};
@@ -170,7 +156,7 @@ void Vertex::updateUniformBuffer(uint32_t currentImage)
 		
 		
 		
-		uniformBuffer.proj = glm::perspective(glm::radians(110.0f),swapchainObj->getCurrentWindowSize().width / (float)swapchainObj->getCurrentWindowSize().height, 0.1f, 10.0f);
+		uniformBuffer.proj = glm::perspective(glm::radians(60.0f),swapchainObj->getCurrentWindowSize().width / (float)swapchainObj->getCurrentWindowSize().height, 0.1f, 10.0f);
 		//donne la perspective ici de 45° et les deux autre paramètre sont le ration de la taille de l'écran (ici)
 		uniformBuffer.proj[1][1] *= -1;
 
@@ -204,7 +190,7 @@ void Vertex::createDescriptorPool()
 	}
 }
 
-void Vertex::createDescriptorSets()
+void Vertex::createDescriptorSets(vector<VkDescriptorSet>& descriptorSets, vector<StructImageObject> imageBuffers)
 {
 	
 	std::vector<VkDescriptorSetLayout> layouts(swapchainObj->getSwapchainImage().size(), *descriptorSetLayout);
@@ -220,35 +206,41 @@ void Vertex::createDescriptorSets()
 	if (result != VK_SUCCESS) {
 		Log::error("Erreur lors de l'allocation du descriptor sets", result);
 	}
-	for (size_t i = 0; i < swapchainObj->getSwapchainImage().size(); i++) {
-		
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = uniformBuffers[i];
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(UniformBufferObject);
 
-		VkDescriptorImageInfo imageInfo{};
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = textureImageView;
-		imageInfo.sampler = textureSampler;
+	for (size_t descriptorIndex = 0; descriptorIndex < swapchainObj->getSwapchainImage().size(); descriptorIndex++) {
+		vector < VkWriteDescriptorSet> descriptorWrites;
+		descriptorWrites.resize(imageBuffers.size());
 
-		std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+		for (uint32_t bindingIndex = 0; bindingIndex < imageBuffers.size(); bindingIndex++)
+		{
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = imageBuffers[bindingIndex].textureImageView; //TODO -> image view
+			imageInfo.sampler = textureSampler;//TODO -> texture sampler
 
-		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = descriptorSets[i];
-		descriptorWrites[0].dstBinding = 0;
-		descriptorWrites[0].dstArrayElement = 0;
-		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[0].descriptorCount = 1;
-		descriptorWrites[0].pBufferInfo = &bufferInfo;
+			descriptorWrites[bindingIndex].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[bindingIndex].dstSet = descriptorSets[descriptorIndex];
+			descriptorWrites[bindingIndex].dstBinding = bindingIndex;
+			descriptorWrites[bindingIndex].dstArrayElement = 0;
+			descriptorWrites[bindingIndex].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrites[bindingIndex].descriptorCount = 1;
+			descriptorWrites[bindingIndex].pImageInfo = &imageInfo;
 
-		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[1].dstSet = descriptorSets[i];
-		descriptorWrites[1].dstBinding = 1;
-		descriptorWrites[1].dstArrayElement = 0;
-		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		descriptorWrites[1].descriptorCount = 1;
-		descriptorWrites[1].pImageInfo = &imageInfo;
+			//TODO -> for loop  with all descriptor i want to pass, on one hand, image buffers and on another hand buffer like uniformbuffer
+			/*VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = uniformBuffers[i];
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(UniformBufferObject);
+
+			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[0].dstSet = descriptorSets[i];
+			descriptorWrites[0].dstBinding = 0;
+			descriptorWrites[0].dstArrayElement = 0;
+			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites[0].descriptorCount = 1;
+			descriptorWrites[0].pBufferInfo = &bufferInfo;
+			*/
+		}	
 
 		vkUpdateDescriptorSets(deviceObj->getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
@@ -256,11 +248,11 @@ void Vertex::createDescriptorSets()
 
 }
 
-void Vertex::createTextureImage()
+void Vertex::createTextureImage(const string TEXTURE_FILE_NAME, StructImageObject &imageBuffer)
 {
 	
 	int texWidth, texHeight, texChannels;
-	stbi_uc * pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	stbi_uc * pixels = stbi_load(TEXTURE_FILE_NAME.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 	Log::message<uint64_t>(imageSize);
 		if (!pixels)
@@ -386,6 +378,7 @@ void Vertex::createImage(uint32_t width, uint32_t height, VkFormat format, VkIma
 	}
 	vkBindImageMemory(deviceObj->getDevice(), imageStruct.image, imageStruct.memory, 0);
 	Log::success("Succeed to create Image !");
+	createTextureImageView(imageStruct);
 }
 
 void Vertex::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
@@ -409,9 +402,9 @@ void Vertex::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, u
 	CommandBufferObj->endSingleTimeCommands(commandBuffer);
 }
 
-void Vertex::createTextureImageView()
+void Vertex::createTextureImageView(StructImageObject& imageStruct)
 {
-	textureImageView = swapchainObj->createImageView(imageBuffer.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	textureImageView = swapchainObj->createImageView(imageStruct.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	if (textureImageView == NULL)
 	{
 		Log::error("failed to create Image View for Image");
@@ -430,7 +423,7 @@ void Vertex::createTextureSampler()
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.anisotropyEnable = VK_TRUE;
-	samplerInfo.maxAnisotropy = 8;
+	samplerInfo.maxAnisotropy = 16;
 	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 	samplerInfo.unnormalizedCoordinates = VK_FALSE;
 	samplerInfo.compareEnable = VK_FALSE;
@@ -452,8 +445,9 @@ void Vertex::createDepthResources() {
 	depthImageView = swapchainObj->createImageView(depthBuffer.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-void Vertex::loadModel()
+void Vertex::loadModel(const string MODEL_PATH, vector<uint32_t> &indices, vector<vertexStruc> &vertices)
 {
+	std::unordered_map<vertexStruc, uint32_t> uniqueVertices{};
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -500,6 +494,7 @@ void Vertex::loadModel()
 		}
 		
 	}
+	uniqueVertices.clear();
 	Log::message(string{ "Number of unique vertices : " }+ std::to_string(indices.size()));
 	Log::message("object Loaded");
 }
@@ -517,17 +512,12 @@ void Vertex::recreateVertexObj()
 
 	CommandBufferObj->createFrameBuffer(depthImageView);
 	CommandBufferObj->createCommandBuffer();
-	CommandBufferObj->commandBufferLoad(rendererObj->getRenderPass(),
-		rendererObj->getGraphicsPipeline(),
-		rendererObj->getPipelineLayout(),
-		&vertexBufferStruct.buffer,
-		&indexBufferStruct.buffer,
-		indices, descriptorSets);
+	
 }
 
 void Vertex::cleanUp()
 {
-	uniqueVertices.clear();
+	
 
 	for (size_t i = 0; i < swapchainObj->getSwapchainImage().size(); i++) {
 		vkDestroyBuffer(deviceObj->getDevice(), uniformBuffers[i], nullptr);
@@ -552,14 +542,7 @@ Vertex::~Vertex()
 	vkDestroyImage(deviceObj->getDevice(), depthBuffer.image, nullptr);
 	vkFreeMemory(deviceObj->getDevice(), depthBuffer.memory, nullptr);
 
-	vkDestroyImage(deviceObj->getDevice(), imageBuffer.image, nullptr);
-	vkFreeMemory(deviceObj->getDevice(), imageBuffer.memory, nullptr);
-
-	vkDestroyBuffer(deviceObj->getDevice(), indexBufferStruct.buffer, nullptr);
-	vkFreeMemory(deviceObj->getDevice(), indexBufferStruct.memory, nullptr);
-
-	vkDestroyBuffer(deviceObj->getDevice(), vertexBufferStruct.buffer, nullptr);
-	vkFreeMemory(deviceObj->getDevice(), vertexBufferStruct.memory, nullptr);
+	
 
 	vkDestroyDescriptorSetLayout(deviceObj->getDevice(), *descriptorSetLayout, nullptr);
 }

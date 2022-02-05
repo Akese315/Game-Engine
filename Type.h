@@ -14,8 +14,16 @@ typedef struct
 {
 	VkImage image;
 	VkDeviceMemory memory;
+	VkImageView textureImageView;
 
 }StructImageObject;
+
+typedef struct createObjectInfo
+{
+	const string FILE_NAME_OBJ;
+	vector<string> FILE_NAME_TEXTURE;
+	const float position[3];
+};
 
 typedef struct vertexStruc
 {
@@ -27,10 +35,8 @@ typedef struct vertexStruc
 		return pos == other.pos && color == other.color && texCoord == other.texCoord;
 		
 	}
-		
-	
 
-}vertexStruc;
+};
 
 template<> struct std::hash<vertexStruc> {
 		size_t operator()(vertexStruc const& vertex) const {
