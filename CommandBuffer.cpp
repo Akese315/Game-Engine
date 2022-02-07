@@ -22,7 +22,7 @@ CommandBuffer::~CommandBuffer()
 void CommandBuffer::init()
 {
 	createCommandPoolForTemp();//il faut créer le commandPool temporaire avant car il doit envoyer les données (vertices et index)	
-	createCommandBuffer();
+	
 
 }
 
@@ -79,12 +79,12 @@ void CommandBuffer::createCommandBuffer()
 
 }
 void CommandBuffer::commandBufferLoad(VkRenderPass* renderpass, VkPipeline* graphicPipeline, VkPipelineLayout* layoutPipeline,
-VkBuffer* vertex,VkBuffer* index, vector<uint32_t> indices, vector<VkDescriptorSet> descriptorSetList)
+VkBuffer* vertex,VkBuffer* index, vector<uint32_t>* indices, vector<VkDescriptorSet> descriptorSetList)
 {
 	
 	for (size_t i = 0; i < _commandBuffer.size(); i++)
 	{
-
+		
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType				= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags				= 0;
@@ -114,14 +114,16 @@ VkBuffer* vertex,VkBuffer* index, vector<uint32_t> indices, vector<VkDescriptorS
 		
 		vkCmdBeginRenderPass(_commandBuffer[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *graphicPipeline);		
-		vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, vertex, offsets);
+		vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, vertex, offsets);		
 		vkCmdBindIndexBuffer(_commandBuffer[i], *index, 0, VK_INDEX_TYPE_UINT32);
+		
 		if(descriptorSetList.size()>0)
 		{ 
+			cout << "indices : " << indices << endl;
 			vkCmdBindDescriptorSets(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *layoutPipeline, 0, 1, &descriptorSetList[i], 0, nullptr);
 		}
 		
-		vkCmdDrawIndexed(_commandBuffer[i],static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+		vkCmdDrawIndexed(_commandBuffer[i],static_cast<uint32_t>(indices->size()), 1, 0, 0, 0);
 		vkCmdEndRenderPass(_commandBuffer[i]);
 
 		error = vkEndCommandBuffer(_commandBuffer[i]);

@@ -5,14 +5,15 @@
 #include <glm/gtx/hash.hpp>
 #include <vector>
 #include <string>
-typedef struct
+
+typedef struct StructBufferObject
 {
 	VkBuffer buffer;
 	VkDeviceMemory memory;	
 
 }StructBufferObject;
 
-typedef struct
+typedef struct StructImageObject
 {
 	VkImage image;
 	VkDeviceMemory memory;
@@ -25,14 +26,14 @@ typedef struct position
 	float x = 0;
 	float y = 0;
 	float z = 0;
-};
+}position;
 
 typedef struct createObjectInfo
 {
-	const std::string FILE_NAME_OBJ= "";
+	std::string FILE_NAME_OBJ;
 	std::vector<std::string> FILE_NAME_TEXTURE;
 	position pos;
-};
+}createObjectInfo;
 
 typedef struct vertexStruc
 {
@@ -45,7 +46,7 @@ typedef struct vertexStruc
 		
 	}
 
-};
+}vertexStruc;
 
 template<> struct std::hash<vertexStruc> {
 		size_t operator()(vertexStruc const& vertex) const {

@@ -6,7 +6,7 @@
 #include <GLFW/glfw3native.h>
 #include <vulkan/include/vulkan.h>
 #include <gl/GL.h>
-
+#include "mainClass.h"
 #include "Log.h"
 #include "Device.h"
 #include "SwapChain.h"
@@ -38,7 +38,8 @@ private:
 	vulkan_render*				renderer;
 	CommandBuffer* 				commandBufferObj;
 	Vertex*						VertexObj;
-
+	mainClass*					mainClassObj;
+		
 	
 
 
@@ -57,6 +58,8 @@ private:
 	void CommandBufferInit();
 	void CommandBufferDeInit();
 	void WindowResized();
+	void createMainClass();
+	void destroyMainClass();
 	void startConsole();
 	VkExtent2D getCurrentWindowSize();
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
