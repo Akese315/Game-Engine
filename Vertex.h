@@ -61,7 +61,6 @@ private:
 	vulkan_render* rendererObj;
 	VkDescriptorSetLayout* descriptorSetLayout;
 	VkDescriptorPool descriptorPool;	
-	VkImageView textureImageView;
 	VkSampler textureSampler;
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;

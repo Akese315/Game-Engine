@@ -44,8 +44,10 @@ int window_engine::init()
 	swapChainInit();
 	PipelineInit();
 	CommandBufferInit();
-	initVertexBuffer();		
+	initVertexBuffer();	
+	createMainClass();
 	createSyncObjects();
+	
 	
 	return 0;
 }
@@ -65,6 +67,7 @@ void window_engine::loop()
 		vkDestroySemaphore(deviceObj->getDevice(), _imageAvailableSemaphore[i], nullptr);
 		vkDestroyFence(deviceObj->getDevice(), _inFlightFences[i], nullptr);
 	}	
+	destroyMainClass();
 	deInitVertexBuffer();	
 	CommandBufferDeInit();
 	PipelineDeInit();
@@ -220,7 +223,7 @@ VkExtent2D window_engine::getCurrentWindowSize()
 void window_engine::WindowResized()
 {
 	vkDeviceWaitIdle(deviceObj->getDevice());
-	
+	mainClassObj->cleanUp();
 	commandBufferObj->cleanUp();
 	VertexObj->cleanUp();
 	renderer->cleanUp();
@@ -230,6 +233,7 @@ void window_engine::WindowResized()
 	renderer->recreatePipeline();
 	commandBufferObj->recreateCommandObj();	
 	VertexObj->recreateVertexObj();	
+	mainClassObj->recreateGraphicObject();
 	_imagesInFlight.resize((swapchainObj->getSwapchainImage()).size(), VK_NULL_HANDLE);
 }
 
@@ -257,6 +261,16 @@ void window_engine::PipelineInit()
 void window_engine::PipelineDeInit()
 {
 	delete renderer;
+}
+
+void window_engine::createMainClass()
+{
+	mainClassObj = new mainClass(deviceObj, VertexObj, commandBufferObj, renderer);
+}
+
+void window_engine::destroyMainClass()
+{
+	delete mainClassObj;
 }
 
 void window_engine::initVertexBuffer()

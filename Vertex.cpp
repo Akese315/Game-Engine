@@ -19,6 +19,7 @@ Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* comman
 	createUniformBuffers();
 	createDescriptorPool();
 	CommandBufferObj->createFrameBuffer(depthImageView);
+	CommandBufferObj->createCommandBuffer();
 	//changement de place de CommandBufferObj
 }
 
@@ -210,7 +211,7 @@ void Vertex::createDescriptorSets(vector<VkDescriptorSet>& descriptorSets, vecto
 
 	for (size_t descriptorIndex = 0; descriptorIndex < swapchainObj->getSwapchainImage().size(); descriptorIndex++) {
 		vector < VkWriteDescriptorSet> descriptorWrites;
-		descriptorWrites.resize(imageBuffers.size());
+		descriptorWrites.resize(imageBuffers.size()+1);
 
 		for (uint32_t bindingIndex = 0; bindingIndex < imageBuffers.size(); bindingIndex++)
 		{
@@ -226,22 +227,19 @@ void Vertex::createDescriptorSets(vector<VkDescriptorSet>& descriptorSets, vecto
 			descriptorWrites[bindingIndex].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			descriptorWrites[bindingIndex].descriptorCount = 1;
 			descriptorWrites[bindingIndex].pImageInfo = &imageInfo;
-
-			//TODO -> for loop  with all descriptor i want to pass, on one hand, image buffers and on another hand buffer like uniformbuffer
-			/*VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = uniformBuffers[i];
-			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(UniformBufferObject);
-
-			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = descriptorSets[i];
-			descriptorWrites[0].dstBinding = 0;
-			descriptorWrites[0].dstArrayElement = 0;
-			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrites[0].descriptorCount = 1;
-			descriptorWrites[0].pBufferInfo = &bufferInfo;
-			*/
 		}	
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = uniformBuffers[descriptorIndex];
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof(UniformBufferObject);
+
+		descriptorWrites[descriptorWrites.size() - 1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[descriptorWrites.size() - 1].dstSet = descriptorSets[descriptorIndex];
+		descriptorWrites[descriptorWrites.size() - 1].dstBinding = 0;
+		descriptorWrites[descriptorWrites.size() - 1].dstArrayElement = 0;
+		descriptorWrites[descriptorWrites.size() - 1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrites[descriptorWrites.size() - 1].descriptorCount = 1;
+		descriptorWrites[descriptorWrites.size() - 1].pBufferInfo = &bufferInfo;
 
 		vkUpdateDescriptorSets(deviceObj->getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
@@ -405,14 +403,14 @@ void Vertex::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, u
 
 void Vertex::createTextureImageView(StructImageObject& imageStruct)
 {
-	textureImageView = swapchainObj->createImageView(imageStruct.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-	if (textureImageView == NULL)
+	imageStruct.textureImageView = swapchainObj->createImageView(imageStruct.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	if (imageStruct.textureImageView == NULL)
 	{
 		Log::error("failed to create Image View for Image");
 
 	}
 	Log::success("success to create Image view for Image");
-}
+	}
 
 void Vertex::createTextureSampler()
 {
@@ -534,7 +532,7 @@ Vertex::~Vertex()
 {	
 	cleanUp();
 	vkDestroySampler(deviceObj->getDevice(), textureSampler, nullptr);
-	vkDestroyImageView(deviceObj->getDevice(), textureImageView, nullptr);
+	
 
 	vkDestroyImageView(deviceObj->getDevice(), depthImageView, nullptr);
 

@@ -161,6 +161,7 @@
     <ClInclude Include="GraphicObject.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="mainClass.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SwapChain.h" />
@@ -177,6 +178,7 @@
     <ClCompile Include="GraphicObject.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mainClass.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="SwapChain.cpp" />
     <ClCompile Include="Vertex.cpp" />

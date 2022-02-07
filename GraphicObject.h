@@ -13,29 +13,31 @@ class GraphicObject
 public:
 	GraphicObject(const createObjectInfo objectInfo,  Device* deviceObj, Vertex* vertexObj, CommandBuffer* commandBufferObj, vulkan_render* renderer);
 	~GraphicObject();
+	void load(StructBufferObject &indexBufferStruct, StructBufferObject &vertexBufferStruct,
+		vector<vertexStruc>& vertices, vector<uint32_t>& indices);
+	void update(StructBufferObject& indexBufferStruct, StructBufferObject& vertexBufferStruct,
+		 vector<vertexStruc>& vertices, vector<uint32_t>& indices);
+	void cleanup(StructBufferObject indexBufferStruct, StructBufferObject vertexBufferStruct);
+	uint32_t getObjectNumber();
+	vector<uint32_t> getIndices();
+	vector<vertexStruc> getVertices();
 	
-	static vector<VkDescriptorSet> descriptorSets;
-	static string OBJ_FILE_NAME;
-	static vector<string> TEXTURE_FILE_NAME;
-	static vector<StructImageObject> imageBuffers;
 private:
 
 	
+	
 	vector<vertexStruc> vertices;
 	vector<uint32_t> indices;
-	StructBufferObject vertexBufferStruct;
-	StructBufferObject indexBufferStruct;
-	position pos;
-
+	vector<VkDescriptorSet> descriptorSets;
 	Vertex* vertexObj;
 	Device* deviceObj;
+	vector<StructImageObject> imageBuffers;
 	CommandBuffer* CommandBufferObj;
 	vulkan_render* rendererObj;
 	uint32_t incrementCount();
-
-	void update();		
-	void cleanup();
+	std::string getOBJ_FILE_NAME();
+	bool checkModel(createObjectInfo objectInfo);			
+	
 
 
 };
-
