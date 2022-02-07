@@ -161,6 +161,8 @@
     <ClInclude Include="GraphicObject.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="object.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SwapChain.h" />
     <ClInclude Include="Type.h" />
     <ClInclude Include="Vertex.h" />
@@ -175,6 +177,7 @@
     <ClCompile Include="GraphicObject.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="object.cpp" />
     <ClCompile Include="SwapChain.cpp" />
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="Vulkan_Obj.cpp" />
@@ -188,6 +191,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Triangle.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Game Engine.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

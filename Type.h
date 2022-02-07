@@ -3,6 +3,8 @@
 #include <vulkan/include/vulkan.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
+#include <vector>
+#include <string>
 typedef struct
 {
 	VkBuffer buffer;
@@ -18,11 +20,18 @@ typedef struct
 
 }StructImageObject;
 
+typedef struct position
+{
+	float x = 0;
+	float y = 0;
+	float z = 0;
+};
+
 typedef struct createObjectInfo
 {
-	const string FILE_NAME_OBJ;
-	vector<string> FILE_NAME_TEXTURE;
-	const float position[3];
+	const std::string FILE_NAME_OBJ= "";
+	std::vector<std::string> FILE_NAME_TEXTURE;
+	position pos;
 };
 
 typedef struct vertexStruc

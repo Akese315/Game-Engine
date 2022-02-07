@@ -19,7 +19,7 @@ Vertex::Vertex(Device* deviceObj, SwapChain* swapchainObj, CommandBuffer* comman
 	createUniformBuffers();
 	createDescriptorPool();
 	CommandBufferObj->createFrameBuffer(depthImageView);
-	CommandBufferObj->createCommandBuffer();
+	//changement de place de CommandBufferObj
 }
 
 
@@ -509,8 +509,6 @@ void Vertex::recreateVertexObj()
 	descriptorSetLayout = rendererObj->getDescriptorSetLayout();
 	createUniformBuffers();
 	createDescriptorPool();
-	createDescriptorSets();
-
 	CommandBufferObj->createFrameBuffer(depthImageView);
 	CommandBufferObj->createCommandBuffer();
 	

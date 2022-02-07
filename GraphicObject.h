@@ -1,37 +1,41 @@
 #pragma once
 #include "Log.h"
 #include "Vertex.h"
-#include "Type.h"
+#include "Device.h"
+#include "vulkan_render.h"
+#include "type.h"
+#include <unordered_map>
+#include <glm/gtx/hash.hpp>
 
 class GraphicObject
+
 {
 public:
-	GraphicObject(const createObjectInfo objectInfo, Vertex* vertexObj, CommandBuffer* CommandBufferObj, Device* deviceObj);
+	GraphicObject(const createObjectInfo objectInfo,  Device* deviceObj, Vertex* vertexObj, CommandBuffer* commandBufferObj, vulkan_render* renderer);
 	~GraphicObject();
-
-
-
+	
+	static vector<VkDescriptorSet> descriptorSets;
+	static string OBJ_FILE_NAME;
+	static vector<string> TEXTURE_FILE_NAME;
+	static vector<StructImageObject> imageBuffers;
 private:
-	Vertex *vertexObj;
-	Device *deviceObj;
-	CommandBuffer* CommandBufferObj;
-	vulkan_render* rendererObj;
-	string OBJ_FILE_NAME;
-	vector<string> TEXTURE_FILE_NAME;
-	StructBufferObject vertexBufferStruct;
-	StructBufferObject indexBufferStruct;
-	vector<StructImageObject> imageBuffers;
+
+	
 	vector<vertexStruc> vertices;
 	vector<uint32_t> indices;
-	vector<VkDescriptorSet> descriptorSets;
-	
+	StructBufferObject vertexBufferStruct;
+	StructBufferObject indexBufferStruct;
+	position pos;
 
-	struct position
-	{
-		float x;
-		float y;
-		float z;
-	}position;
-	
+	Vertex* vertexObj;
+	Device* deviceObj;
+	CommandBuffer* CommandBufferObj;
+	vulkan_render* rendererObj;
+	uint32_t incrementCount();
+
+	void update();		
+	void cleanup();
+
+
 };
 
