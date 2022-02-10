@@ -223,7 +223,6 @@ VkExtent2D window_engine::getCurrentWindowSize()
 void window_engine::WindowResized()
 {
 	vkDeviceWaitIdle(deviceObj->getDevice());
-	mainClassObj->cleanUp();
 	commandBufferObj->cleanUp();
 	VertexObj->cleanUp();
 	renderer->cleanUp();

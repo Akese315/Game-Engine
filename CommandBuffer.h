@@ -1,11 +1,13 @@
 #pragma once
 #include <vulkan/include/vulkan.h>
-#include "Type.h"
+#include <vector>
 #include "Device.h"
 #include "SwapChain.h"
 #include "vulkan_render.h"
+#include "Type.h"
 #include "Log.h"
-#include <vector>
+
+//#include "object.h"
 
 
 class CommandBuffer
@@ -19,8 +21,7 @@ public:
 	void								recreateCommandObj();
 	void								copyBuffer(StructBufferObject* srcBuffer, StructBufferObject* destBuffer, VkDeviceSize size);
 	void								cleanUp();
-	void								commandBufferLoad(VkRenderPass* renderpass, VkPipeline* graphicPipeline, VkPipelineLayout* layoutPipeline,
-										VkBuffer* vertex, VkBuffer* index, vector<uint32_t>* indices, vector<VkDescriptorSet> descriptorSetList);
+	void								commandBufferLoad(vector<CommandInfo> objectList);
 	VkCommandBuffer						beginSingleTimeCommands();
 	void								endSingleTimeCommands(VkCommandBuffer commandBuffer);
 	void								createFrameBuffer(VkImageView depthImageView);
@@ -44,6 +45,7 @@ private:
 	VkCommandPool						_commandPoolTemp;
 	vector<VkCommandBuffer>				_commandBuffer;
 
+	//pointeur
 	Device*								DeviceObj;
 	SwapChain*							swapchainObj;
 	VkExtent2D*							extent;

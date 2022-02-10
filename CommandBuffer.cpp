@@ -16,13 +16,14 @@ CommandBuffer::~CommandBuffer()
 {	
 	cleanUp();	
 	vkDestroyCommandPool(DeviceObj->getDevice(), _commandPool, nullptr);
+	vkDestroyCommandPool(DeviceObj->getDevice(), _commandPoolTemp, nullptr);
+
 }
 
 
 void CommandBuffer::init()
 {
 	createCommandPoolForTemp();//il faut créer le commandPool temporaire avant car il doit envoyer les données (vertices et index)	
-	
 
 }
 
@@ -33,13 +34,14 @@ void CommandBuffer::recreateCommandObj()
 
 void CommandBuffer::cleanUp()
 {
+	
 	for (VkFramebuffer framebuffer : _swapChainFramebuffers) {		   
 		vkDestroyFramebuffer(DeviceObj->getDevice(), framebuffer, nullptr);	 
 	}
 	vkFreeCommandBuffers(DeviceObj->getDevice(),
 		_commandPool, static_cast<uint32_t>(_swapChainFramebuffers.size()),
-		_commandBuffer.data());											  
-			 
+		_commandBuffer.data());
+	_commandBuffer.clear();
 																		
 	
 }
@@ -78,8 +80,7 @@ void CommandBuffer::createCommandBuffer()
 	}
 
 }
-void CommandBuffer::commandBufferLoad(VkRenderPass* renderpass, VkPipeline* graphicPipeline, VkPipelineLayout* layoutPipeline,
-VkBuffer* vertex,VkBuffer* index, vector<uint32_t>* indices, vector<VkDescriptorSet> descriptorSetList)
+void CommandBuffer::commandBufferLoad(vector<CommandInfo> objectList)
 {
 	
 	for (size_t i = 0; i < _commandBuffer.size(); i++)
@@ -103,27 +104,34 @@ VkBuffer* vertex,VkBuffer* index, vector<uint32_t>* indices, vector<VkDescriptor
 
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType				= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass			= *renderpass;
+		renderPassInfo.renderPass			= *renderer->getRenderPass();
 		renderPassInfo.framebuffer			= _swapChainFramebuffers[i];
 		renderPassInfo.clearValueCount		= static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues			= clearValues.data();
 		renderPassInfo.renderArea.extent	= *extent;
 
+		
 		VkDeviceSize offsets[] = { 0 };
 
-		
 		vkCmdBeginRenderPass(_commandBuffer[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *graphicPipeline);		
-		vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, vertex, offsets);		
-		vkCmdBindIndexBuffer(_commandBuffer[i], *index, 0, VK_INDEX_TYPE_UINT32);
-		
-		if(descriptorSetList.size()>0)
-		{ 
-			cout << "indices : " << indices << endl;
-			vkCmdBindDescriptorSets(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, *layoutPipeline, 0, 1, &descriptorSetList[i], 0, nullptr);
+		for (CommandInfo object3D : objectList)
+		{
+			
+			vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getPipeline());
+			vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, object3D.vertexBuffer, offsets);
+			vkCmdBindIndexBuffer(_commandBuffer[i], *object3D.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			if (object3D.descriptorSets->size() > 0)
+			{
+				vkCmdBindDescriptorSets(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS,	object3D.layoutPipeline,
+					0, 1,
+					&object3D.descriptorSets->at(i),
+					0, nullptr);
+				cout << object3D.descriptorSets->at(i) << endl;
+				
+			}
+			vkCmdDrawIndexed(_commandBuffer[i], static_cast<uint32_t>(object3D.indiceCount), 1, 0, 0, 0);
 		}
 		
-		vkCmdDrawIndexed(_commandBuffer[i],static_cast<uint32_t>(indices->size()), 1, 0, 0, 0);
 		vkCmdEndRenderPass(_commandBuffer[i]);
 
 		error = vkEndCommandBuffer(_commandBuffer[i]);
@@ -203,7 +211,7 @@ VkCommandBuffer CommandBuffer::beginSingleTimeCommands()
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = _commandPool;
+	allocInfo.commandPool = _commandPoolTemp;
 	allocInfo.commandBufferCount = 1;
 	
 	VkCommandBuffer commandBuffer;
@@ -243,7 +251,7 @@ void CommandBuffer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
 		Log::error("Failed to wait Idle", error);
 	}
 	
-	vkFreeCommandBuffers(DeviceObj->getDevice(), _commandPool, 1, &commandBuffer);
+	vkFreeCommandBuffers(DeviceObj->getDevice(), _commandPoolTemp, 1, &commandBuffer);
 
 }
 vector<VkCommandBuffer> CommandBuffer::getCommandBuffer()

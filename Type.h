@@ -28,13 +28,6 @@ typedef struct position
 	float z = 0;
 }position;
 
-typedef struct createObjectInfo
-{
-	std::string FILE_NAME_OBJ;
-	std::vector<std::string> FILE_NAME_TEXTURE;
-	position pos;
-}createObjectInfo;
-
 typedef struct vertexStruc
 {
 	glm::vec3 pos;
@@ -43,10 +36,21 @@ typedef struct vertexStruc
 
 	bool operator==(const vertexStruc& other) const {
 		return pos == other.pos && color == other.color && texCoord == other.texCoord;
-		
+
 	}
 
 }vertexStruc;
+
+typedef struct createObjectInfo
+{
+	std::string FILE_NAME_OBJ;
+	std::vector<std::string> FILE_NAME_TEXTURE;
+	std::vector<uint32_t> indices;
+	std::vector<vertexStruc> vertices;
+	position pos;
+}createObjectInfo;
+
+
 
 template<> struct std::hash<vertexStruc> {
 		size_t operator()(vertexStruc const& vertex) const {
@@ -59,3 +63,22 @@ typedef struct {
 	alignas(16) glm::mat4 view;
 	alignas(16) glm::mat4 proj;
 }UniformBufferObject;
+
+typedef struct MaterialStruct
+{
+	VkPipeline _graphicPipepline;
+	VkPipelineLayout _layoutPipeline;
+	std::string _vertexShaderPath;
+	std::string _fragmentShaderPath;
+	VkDescriptorSetLayout _descriptorLayout;
+}MaterialStruct;
+
+typedef struct CommandInfo
+{
+	VkPipeline graphicPipeline;
+	VkPipelineLayout layoutPipeline;
+	VkBuffer* vertexBuffer;
+	VkBuffer* indexBuffer;
+	std::vector<VkDescriptorSet>* descriptorSets;
+	uint32_t indiceCount;
+};

@@ -5,25 +5,47 @@ object::object(string name, uint32_t id, GraphicObject* graphicObj)
 	this->name = name;
 	this->id = id;
 	this->graphicObj = graphicObj;
-	
-	init();
-}
 
-void object::init()
-{
-	vertices = graphicObj->getVertices();
-	indices = graphicObj->getIndices();
-	graphicObj->load(indexBufferStruct ,vertexBufferStruct,vertices, indices);
+	vertices = graphicObj->getVertices(vertexBufferStruct);
+	indices = graphicObj->getIndices(indexBufferStruct);
 }
+/*
+StructBufferObject* object::getBufferStruct()
+{
+	StructBufferObject buffer[2];
+	buffer[0] = indexBufferStruct;
+	buffer[1] = vertexBufferStruct;
 
-array<StructBufferObject,2>object::getBufferStruct()
-{
-	array<StructBufferObject, 2> bufferStruct = { indexBufferStruct, vertexBufferStruct };
-	return bufferStruct;
-}
+	//array<StructBufferObject, 2> bufferStruct = { indexBufferStruct, vertexBufferStruct };
+	return buffer;
+}*/
 void object::move(glm::vec3 direction, glm::vec1 vitesse, int forward)
 {
+	
+	
 
+}
+
+GraphicObject* object::getModelObject()
+{
+	return graphicObj;
+}
+VkBuffer* object::getIndexBuffer()
+{
+	return &indexBufferStruct.buffer;
+}
+VkBuffer* object::getVertexBuffer()
+{
+	return &vertexBufferStruct.buffer;
+}
+uint32_t object::getIndicesCount()
+{
+	return indices.size();
+}
+void object::update()
+{
+	vertices = graphicObj->getVertices(vertexBufferStruct);
+	indices = graphicObj->getIndices(indexBufferStruct);
 }
 object::~object()
 {

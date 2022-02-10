@@ -50,7 +50,8 @@ public:
 	void createVertexBuffer(StructBufferObject& vertexBufferStruct,const vector<vertexStruc> vertices);
 	void loadModel(const string MODEL_PATH, vector<uint32_t>& indices, vector<vertexStruc>& vertices);
 	void createTextureImage(const string TEXTURE_FILE_NAME, StructImageObject& imageBuffer);
-	void createDescriptorSets(vector<VkDescriptorSet>& descriptorSets, vector<StructImageObject> imageBuffers);
+	void createDescriptorSets(vector<VkDescriptorSet>& descriptorSets, vector<StructImageObject> imageBuffers, VkDescriptorPool* descriptorPool);
+	void createDescriptorPool(VkDescriptorPool& descriptorPool);
 
 private:
 
@@ -60,7 +61,7 @@ private:
 	CommandBuffer* CommandBufferObj;
 	vulkan_render* rendererObj;
 	VkDescriptorSetLayout* descriptorSetLayout;
-	VkDescriptorPool descriptorPool;	
+
 	VkSampler textureSampler;
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
@@ -79,7 +80,7 @@ private:
 
 	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);	
 	void createUniformBuffers();	
-	void createDescriptorPool();
+	
 	
 	void createTextureImageView(StructImageObject& imageStruct);
 	void createDepthResources();

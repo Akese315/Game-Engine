@@ -10,40 +10,53 @@
 class vulkan_render
 {
 private:
-	vector<char>						_vertShaderCode;
-	vector<char>						_fragShaderCode;
-	VkPipelineShaderStageCreateInfo		_shaderStages[2];
+	
 	vector<VkFramebuffer>				_swapChainFramebuffers;
-	VkRenderPass						_renderPass = NULL;
-	VkPipelineLayout					_pipelineLayout = NULL;
-	VkPipeline							_graphicsPipeline = NULL;
-	VkDescriptorSetLayout				_descriptorSetLayout = NULL;
-
+	VkRenderPass						_renderpass;
 	Device*								deviceObj = NULL;
 	VkExtent2D*							extent;
 	SwapChain*							swapchain = NULL;
+	VkDescriptorSetLayout descriptorLayout;
+	VkPipelineLayout pipelineLayout;
+	VkPipeline pipeline;
+	//materials 
+	MaterialStruct normal;
+
+	//TODO ->
+	MaterialStruct metal;
+	MaterialStruct glass;
+	MaterialStruct water;
+	//materials 
 
 
 	vector<char>						readFile(const std::string& filename);
 	VkShaderModule						createShaderModule(const std::vector<char>& code);	
-	
-	void								getShaderCode();
+	void								createMaterials(MaterialStruct& material);
+	vector<char>						getShader(string vertexPath);
 	void								init();
-	void								createRenderPass();
+	VkRenderPass						createRenderPass();
 	VkVertexInputBindingDescription			getBindingDescription();
 	array<VkVertexInputAttributeDescription, 3>		getAttributeDescriptions();
 	void								initShader();
-	
+	VkPipelineVertexInputStateCreateInfo createVertexInputState();
+	VkPipelineInputAssemblyStateCreateInfo createInputAssembly();
+	VkPipelineViewportStateCreateInfo createViewPortState();
+	VkPipelineRasterizationStateCreateInfo createRasterizer();
+	VkPipelineMultisampleStateCreateInfo createMultisampler();
+	VkPipelineColorBlendStateCreateInfo createColorBlender();
+	VkPipelineDepthStencilStateCreateInfo createDepthStencil();
+	//VkPipelineDynamicStateCreateInfo createDynamicState();
+	VkPipelineLayout createPipelineLayout(VkDescriptorSetLayout& descriptorSetLayout);
 	
 public:
 
 										vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain);
 										~vulkan_render();
-	void								createPipelineLayout();
-	void								createDescriptorSetLayout();
-	 VkRenderPass*						getRenderPass();
-	 VkPipeline*							getGraphicsPipeline();
-	 VkPipelineLayout*					getPipelineLayout();
+	MaterialStruct						getNormalMaterial();
+	VkPipeline							getPipeline();
+	VkPipelineLayout*					getPipelineLayout();
+	VkRenderPass*						getRenderPass();
+	VkDescriptorSetLayout				createDescriptorSetLayout();
 	 VkDescriptorSetLayout*				getDescriptorSetLayout();
 	 void								recreatePipeline();
 	 void								cleanUp();

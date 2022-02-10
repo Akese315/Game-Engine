@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Log.h"
 #include "Vertex.h"
 #include "Device.h"
@@ -7,36 +8,33 @@
 #include <unordered_map>
 #include <glm/gtx/hash.hpp>
 
+
 class GraphicObject
 
 {
 public:
-	GraphicObject(const createObjectInfo objectInfo,  Device* deviceObj, Vertex* vertexObj, CommandBuffer* commandBufferObj, vulkan_render* renderer);
+	GraphicObject(const createObjectInfo objectInfo,  Device* deviceObj, Vertex* vertexObj, vulkan_render* renderer);
 	~GraphicObject();
-	void load(StructBufferObject &indexBufferStruct, StructBufferObject &vertexBufferStruct,
-		vector<vertexStruc>& vertices, vector<uint32_t>& indices);
-	void update(StructBufferObject& indexBufferStruct, StructBufferObject& vertexBufferStruct,
-		 vector<vertexStruc>& vertices, vector<uint32_t>& indices);
+	void update();
 	void cleanup(StructBufferObject indexBufferStruct, StructBufferObject vertexBufferStruct);
+	vector<VkDescriptorSet>* getDescriptorset();
 	uint32_t getObjectNumber();
-	vector<uint32_t> getIndices();
-	vector<vertexStruc> getVertices();
+	MaterialStruct* getMaterial();
+	vector<uint32_t> getIndices(StructBufferObject& indexBufferStruct);
+	vector<vertexStruc> getVertices(StructBufferObject& vertexBufferStruct);
+	void updateBuffer(VkBuffer vertex, VkBuffer index);
 	
 private:
-
-	
-	
+	MaterialStruct currentMaterial;
 	vector<vertexStruc> vertices;
 	vector<uint32_t> indices;
 	vector<VkDescriptorSet> descriptorSets;
+	VkDescriptorPool descriptorPool;
 	Vertex* vertexObj;
 	Device* deviceObj;
-	vector<StructImageObject> imageBuffers;
-	CommandBuffer* CommandBufferObj;
+	vector<StructImageObject> imageBuffers;	
 	vulkan_render* rendererObj;
-	uint32_t incrementCount();
-	std::string getOBJ_FILE_NAME();
-	bool checkModel(createObjectInfo objectInfo);			
+	bool checkModel(string FILE_NAME_OBJ);
 	
 
 
