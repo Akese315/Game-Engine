@@ -70,8 +70,6 @@ private:
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	
-
-	
 	
 	UniformBufferObject uniformBuffer;
 	StructImageObject depthBuffer;

@@ -19,11 +19,33 @@ StructBufferObject* object::getBufferStruct()
 	//array<StructBufferObject, 2> bufferStruct = { indexBufferStruct, vertexBufferStruct };
 	return buffer;
 }*/
-void object::move(glm::vec3 direction, glm::vec1 vitesse, int forward)
-{
+void object::move(glm::vec3 direction, glm::vec1 vitesse, int forward, float time)
+{	
 	
-	
+	updateVertices(vertices, direction, time);
+	graphicObj->updateBuffer(vertexBufferStruct, indexBufferStruct, vertices, indices);
+}
 
+void object::updateVertices(vector<vertexStruc>& vertexList, glm::vec3 direction, float time)
+{
+	for (uint32_t i = 0; i < vertexList.size(); i++)
+	{
+		
+		
+		if (direction.x != 0)
+		{
+			vertexList[i].pos.x += direction.x * time;
+		}
+		if (direction.y != 0)
+		{
+			vertexList[i].pos.y += direction.y * time;
+		}
+		if (direction.z != 0)
+		{
+			vertexList[i].pos.z += direction.z * time;
+		}	
+	}
+	
 }
 
 GraphicObject* object::getModelObject()
@@ -44,12 +66,15 @@ uint32_t object::getIndicesCount()
 }
 void object::update()
 {
-	vertices = graphicObj->getVertices(vertexBufferStruct);
-	indices = graphicObj->getIndices(indexBufferStruct);
+	graphicObj->cleanup(indexBufferStruct, vertexBufferStruct);
+	graphicObj->getVertices(vertexBufferStruct);
+	graphicObj->getIndices(indexBufferStruct);
+	move(glm::vec3(4, 4, 4), glm::vec1(1), 1, 1.0);
+	
 }
 object::~object()
 {
 	vertices.clear();
 	indices.clear();
-	graphicObj->cleanup(indexBufferStruct,vertexBufferStruct);
+	graphicObj->cleanup(indexBufferStruct, vertexBufferStruct);
 }

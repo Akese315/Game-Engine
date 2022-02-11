@@ -155,12 +155,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
     <ClInclude Include="CommandBuffer.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="EngineInstance.h" />
     <ClInclude Include="floor.h" />
     <ClInclude Include="GraphicObject.h" />
     <ClInclude Include="Header.h" />
+    <ClInclude Include="WindowEvent.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="mainClass.h" />
     <ClInclude Include="object.h" />
@@ -173,11 +175,13 @@
     <ClInclude Include="window_engine.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="EngineInstance.cpp" />
     <ClCompile Include="floor.cpp" />
     <ClCompile Include="GraphicObject.cpp" />
+    <ClCompile Include="WindowEvent.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainClass.cpp" />

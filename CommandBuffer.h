@@ -19,7 +19,7 @@ public:
 										~CommandBuffer();
 	vector<VkCommandBuffer>				getCommandBuffer();
 	void								recreateCommandObj();
-	void								copyBuffer(StructBufferObject* srcBuffer, StructBufferObject* destBuffer, VkDeviceSize size);
+	void								copyBuffer(StructBufferObject* bufferStruct, VkDeviceSize size);
 	void								cleanUp();
 	void								commandBufferLoad(vector<CommandInfo> objectList);
 	VkCommandBuffer						beginSingleTimeCommands();

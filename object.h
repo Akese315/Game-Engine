@@ -11,12 +11,14 @@ class object
 public:
 	object(string name,uint32_t id, GraphicObject* graphicObj);
 	~object();
-	void move(glm::vec3 direction, glm::vec1 vitesse, int forward);
+	void move(glm::vec3 direction, glm::vec1 vitesse, int forward, float time);
 	position getPosition();
 	GraphicObject* getModelObject();
 	VkBuffer* getVertexBuffer();
 	VkBuffer* getIndexBuffer();
 	uint32_t getIndicesCount();
+	void updateVertices(vector<vertexStruc>& vertexList, glm::vec3 direction, float time);
+	void updateIndices(vector<uint32_t>& indexList);
 	//StructBufferObject* getBufferStruct();
 	void update();
 private:

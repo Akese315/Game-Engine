@@ -13,7 +13,7 @@ class GraphicObject
 
 {
 public:
-	GraphicObject(const createObjectInfo objectInfo,  Device* deviceObj, Vertex* vertexObj, vulkan_render* renderer);
+	GraphicObject(const createObjectInfo objectInfo,  Device* deviceObj, Vertex* vertexObj, vulkan_render* renderer, CommandBuffer* commandBufferObj);
 	~GraphicObject();
 	void update();
 	void cleanup(StructBufferObject indexBufferStruct, StructBufferObject vertexBufferStruct);
@@ -22,7 +22,7 @@ public:
 	MaterialStruct* getMaterial();
 	vector<uint32_t> getIndices(StructBufferObject& indexBufferStruct);
 	vector<vertexStruc> getVertices(StructBufferObject& vertexBufferStruct);
-	void updateBuffer(VkBuffer vertex, VkBuffer index);
+	void updateBuffer(StructBufferObject vertexStructbuffer, StructBufferObject indexStructbuffer, vector<vertexStruc> vertexStruct, vector<uint32_t> indexStruct);
 	
 private:
 	MaterialStruct currentMaterial;
@@ -30,9 +30,11 @@ private:
 	vector<uint32_t> indices;
 	vector<VkDescriptorSet> descriptorSets;
 	VkDescriptorPool descriptorPool;
+	vector<StructImageObject> imageBuffers;
+
 	Vertex* vertexObj;
 	Device* deviceObj;
-	vector<StructImageObject> imageBuffers;	
+	CommandBuffer* commandBufferObj;
 	vulkan_render* rendererObj;
 	bool checkModel(string FILE_NAME_OBJ);
 	

@@ -3,6 +3,7 @@
 #include <vulkan/include/vulkan.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
+#include <GLFW/glfw3.h>
 #include <vector>
 #include <string>
 
@@ -10,6 +11,9 @@ typedef struct StructBufferObject
 {
 	VkBuffer buffer;
 	VkDeviceMemory memory;	
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingMemory;
+	void* data;
 
 }StructBufferObject;
 
@@ -63,6 +67,15 @@ typedef struct {
 	alignas(16) glm::mat4 view;
 	alignas(16) glm::mat4 proj;
 }UniformBufferObject;
+
+typedef struct keyMapping
+{
+	bool movefront = false;
+	bool moveback = false;
+	bool moveleft = false;
+	bool moveright = false;
+	bool ismove = false;
+}keyMapping;
 
 typedef struct MaterialStruct
 {

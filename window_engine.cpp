@@ -40,6 +40,7 @@ int window_engine::init()
 	glfwSetWindowUserPointer(_window, this);
 	glfwSetFramebufferSizeCallback(_window, framebufferResizeCallback);
 	glfwSetWindowPos(_window, 710, 290);
+	createWindowEvent();
 	CreateSurface();
 	swapChainInit();
 	PipelineInit();
@@ -73,6 +74,7 @@ void window_engine::loop()
 	PipelineDeInit();
 	swapChainDeInit();
 	vkDestroySurfaceKHR(VulkanInstance, _surface, nullptr);
+	destroyWindowEvent();
 	glfwTerminate();
 	
 }
@@ -97,6 +99,7 @@ void window_engine::drawFrame()
 	}
 	_imagesInFlight[imageIndex] = _inFlightFences[_currentFrame];
 	VertexObj->updateUniformBuffer(imageIndex);
+	mainClassObj->update();
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -240,10 +243,19 @@ void window_engine::startConsole()
 {
 }
 
+void window_engine::createWindowEvent()
+{
+	this->WindowEventObj = new WindowEvent(_window);
+}
+
+void window_engine::destroyWindowEvent()
+{
+	delete WindowEventObj;
+}
+
 void window_engine::swapChainInit()
 {
 	this->swapchainObj	= new SwapChain(this->deviceObj, &_surface, &_swapchainExtent);
-	cout << swapchainObj->getSwapChain() << endl;
 }
 
 void window_engine::swapChainDeInit()
@@ -264,7 +276,7 @@ void window_engine::PipelineDeInit()
 
 void window_engine::createMainClass()
 {
-	mainClassObj = new mainClass(deviceObj, VertexObj, commandBufferObj, renderer);
+	mainClassObj = new mainClass(deviceObj, VertexObj, commandBufferObj, renderer, WindowEventObj);
 }
 
 void window_engine::destroyMainClass()

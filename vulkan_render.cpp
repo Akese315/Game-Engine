@@ -208,8 +208,8 @@ void vulkan_render::createMaterials(MaterialStruct& material)
 
 	//VkPipelineDynamicStateCreateInfo dynamicState = createDynamicState();
 
-	descriptorLayout = createDescriptorSetLayout();
-	pipelineLayout = createPipelineLayout(descriptorLayout);
+	normal._descriptorLayout = createDescriptorSetLayout();
+	normal._layoutPipeline = createPipelineLayout(normal._descriptorLayout);
 
 	VkGraphicsPipelineCreateInfo  pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -223,36 +223,18 @@ void vulkan_render::createMaterials(MaterialStruct& material)
 	pipelineInfo.pDepthStencilState = &depthStencil; // Optionel
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = nullptr; //plus tard PLUS JAMAIS PUT1 à cause de cette merde j'ai galéré pendant 2 heures
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = normal._layoutPipeline;
 	pipelineInfo.renderPass = _renderpass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = NULL; // Optionel
 	
 
-
 	
-	
-	cout << shaderStages << endl;
-	cout << &inputAssembly << endl;
-	cout << &viewportState << endl;
-	cout << &rasterizer << endl;
-	cout << &multisampling << endl;
-	cout << &depthStencil << endl;
-	cout << &colorBlending << endl;
-	cout << &pipelineInfo << endl;
-	cout << pipelineLayout << endl;
-	cout << _renderpass << endl;
-	
-
-	
-	VkResult error = vkCreateGraphicsPipelines(deviceObj->getDevice(), nullptr, 1, &pipelineInfo, nullptr, &pipeline);
+	VkResult error = vkCreateGraphicsPipelines(deviceObj->getDevice(), nullptr, 1, &pipelineInfo, nullptr, &normal._graphicPipepline);
 	if (error != VK_SUCCESS) {
 		Log::error("Failed to create graphical pipeline!", error);
 		exit(-1);
 	}
-	normal._graphicPipepline = pipeline;
-	normal._descriptorLayout =descriptorLayout;
-	normal._layoutPipeline = pipelineLayout;
 
 	vkDestroyShaderModule(deviceObj->getDevice(), shaderStages[0].module, nullptr);
 	vkDestroyShaderModule(deviceObj->getDevice(), shaderStages[1].module, nullptr);
@@ -533,15 +515,6 @@ VkRenderPass vulkan_render::createRenderPass()
 	return _renderPass;
 }
 
-VkPipeline vulkan_render::getPipeline()
-{
-	return normal._graphicPipepline;
-}
-
-VkPipelineLayout* vulkan_render::getPipelineLayout()
-{
-	return &pipelineLayout;
-}
 VkDescriptorSetLayout vulkan_render::createDescriptorSetLayout()
 {
 	VkDescriptorSetLayoutBinding uboLayoutBinding{};

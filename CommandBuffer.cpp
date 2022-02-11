@@ -117,7 +117,7 @@ void CommandBuffer::commandBufferLoad(vector<CommandInfo> objectList)
 		for (CommandInfo object3D : objectList)
 		{
 			
-			vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->getPipeline());
+			vkCmdBindPipeline(_commandBuffer[i], VK_PIPELINE_BIND_POINT_GRAPHICS, object3D.graphicPipeline);
 			vkCmdBindVertexBuffers(_commandBuffer[i], 0, 1, object3D.vertexBuffer, offsets);
 			vkCmdBindIndexBuffer(_commandBuffer[i], *object3D.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 			if (object3D.descriptorSets->size() > 0)
@@ -126,7 +126,6 @@ void CommandBuffer::commandBufferLoad(vector<CommandInfo> objectList)
 					0, 1,
 					&object3D.descriptorSets->at(i),
 					0, nullptr);
-				cout << object3D.descriptorSets->at(i) << endl;
 				
 			}
 			vkCmdDrawIndexed(_commandBuffer[i], static_cast<uint32_t>(object3D.indiceCount), 1, 0, 0, 0);
@@ -158,7 +157,7 @@ void CommandBuffer::createCommandPoolForTemp()
 	}
 }
 
-void CommandBuffer::copyBuffer(StructBufferObject* srcBuffer, StructBufferObject* destBuffer, VkDeviceSize size)
+void CommandBuffer::copyBuffer(StructBufferObject* bufferStruct, VkDeviceSize size)
 {
 	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -166,12 +165,12 @@ void CommandBuffer::copyBuffer(StructBufferObject* srcBuffer, StructBufferObject
 	copyRegion.srcOffset = 0; // Optionel
 	copyRegion.dstOffset = 0; // Optionel
 	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, srcBuffer->buffer, destBuffer->buffer, 1, &copyRegion);
+	vkCmdCopyBuffer(commandBuffer, bufferStruct->stagingBuffer, bufferStruct->buffer, 1, &copyRegion);
 
 	endSingleTimeCommands(commandBuffer);
 
-	vkDestroyBuffer(DeviceObj->getDevice(), srcBuffer->buffer, nullptr);
-	vkFreeMemory(DeviceObj->getDevice(), srcBuffer->memory, nullptr);
+	//vkDestroyBuffer(DeviceObj->getDevice(), srcBuffer->buffer, nullptr);
+	//vkFreeMemory(DeviceObj->getDevice(), srcBuffer->memory, nullptr); déplacement 
 }
 
 

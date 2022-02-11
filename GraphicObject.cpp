@@ -1,6 +1,6 @@
 #include "GraphicObject.h"
 
-GraphicObject::GraphicObject(const createObjectInfo objectInfo, Device* deviceObj, Vertex* vertexObj, vulkan_render* renderer)
+GraphicObject::GraphicObject(const createObjectInfo objectInfo, Device* deviceObj, Vertex* vertexObj, vulkan_render* renderer, CommandBuffer* commandBufferObj)
 {
 	if (!objectInfo.indices.empty()&& !objectInfo.indices.empty())
 	{
@@ -27,6 +27,7 @@ GraphicObject::GraphicObject(const createObjectInfo objectInfo, Device* deviceOb
 	this->rendererObj = renderer;
 	currentMaterial = rendererObj->getNormalMaterial();
 	this->vertexObj = vertexObj;
+	this->commandBufferObj = commandBufferObj;
 	this->deviceObj = deviceObj;
 
 	//initialisation des objets de bases à cet endroit pour éviter si jamais il y a un
@@ -72,13 +73,17 @@ bool GraphicObject::checkModel(string FILE_NAME_OBJ)
 	return false;
 }
 
-void GraphicObject::updateBuffer(VkBuffer vertex,VkBuffer index)
+void GraphicObject::updateBuffer(StructBufferObject vertexStructbuffer, StructBufferObject indexStructbuffer,vector<vertexStruc> vertexStruct, vector<uint32_t> indexStruct)
 {
 	/*
-	void* data;
-	vkMapMemory(deviceObj->getDevice(), index, 0, bufferSize, 0, &data);
-	memcpy(data, indices.data(), (size_t)bufferSize);
-	vkUnmapMemory(deviceObj->getDevice(), stagingBuffer.memory);*/
+	VkDeviceSize bufferSizeIndex = sizeof(indexStruct[0]) * indexStruct.size();
+	memcpy(indexStructbuffer.data, indexStruct.data(), (size_t)bufferSizeIndex);
+	commandBufferObj->copyBuffer(&indexStructbuffer, bufferSizeIndex);
+	*/
+	VkDeviceSize bufferSizeVertex = sizeof(vertexStruct[0]) * vertexStruct.size();
+	memcpy(vertexStructbuffer.data, vertexStruct.data(), (size_t)bufferSizeVertex);
+	commandBufferObj->copyBuffer(&vertexStructbuffer, bufferSizeVertex);
+	
 }
 
 uint32_t GraphicObject::getObjectNumber()
@@ -113,6 +118,8 @@ void GraphicObject::update()
 	vkDestroyDescriptorPool(deviceObj->getDevice(), descriptorPool, nullptr);
 	descriptorSets.clear();
 	descriptorSets.resize(0);
+	//récupération du material :: faire toujours attention 
+	currentMaterial = rendererObj->getNormalMaterial(); 
 	//reconstruction des descriptorset et de la pool
 	this->vertexObj->createDescriptorPool(descriptorPool);
 	this->vertexObj->createDescriptorSets(descriptorSets, imageBuffers, &descriptorPool);
@@ -124,12 +131,22 @@ void GraphicObject::update()
 
 void GraphicObject::cleanup(StructBufferObject indexBufferStruct, StructBufferObject vertexBufferStruct)
 {
-	// cette fonction est appellé uniquement à la fin et par l'objet lui même
+	// cette fonction est appellé par l'objet lui même
 	vkDestroyBuffer(deviceObj->getDevice(), indexBufferStruct.buffer, nullptr);
 	vkFreeMemory(deviceObj->getDevice(), indexBufferStruct.memory, nullptr);
 
 	vkDestroyBuffer(deviceObj->getDevice(), vertexBufferStruct.buffer, nullptr);
 	vkFreeMemory(deviceObj->getDevice(), vertexBufferStruct.memory, nullptr);
+
+	vkUnmapMemory(deviceObj->getDevice(), indexBufferStruct.stagingMemory);
+	vkUnmapMemory(deviceObj->getDevice(), vertexBufferStruct.stagingMemory);
+
+	vkDestroyBuffer(deviceObj->getDevice(), indexBufferStruct.stagingBuffer, nullptr);
+	vkFreeMemory(deviceObj->getDevice(), indexBufferStruct.stagingMemory, nullptr);
+	
+	vkDestroyBuffer(deviceObj->getDevice(), vertexBufferStruct.stagingBuffer, nullptr);
+	vkFreeMemory(deviceObj->getDevice(), vertexBufferStruct.stagingMemory, nullptr);
+
 	
 }
 

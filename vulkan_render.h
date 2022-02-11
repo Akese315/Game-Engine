@@ -16,9 +16,6 @@ private:
 	Device*								deviceObj = NULL;
 	VkExtent2D*							extent;
 	SwapChain*							swapchain = NULL;
-	VkDescriptorSetLayout descriptorLayout;
-	VkPipelineLayout pipelineLayout;
-	VkPipeline pipeline;
 	//materials 
 	MaterialStruct normal;
 
@@ -53,8 +50,6 @@ public:
 										vulkan_render(Device* device, VkExtent2D* extent, SwapChain * swapchain);
 										~vulkan_render();
 	MaterialStruct						getNormalMaterial();
-	VkPipeline							getPipeline();
-	VkPipelineLayout*					getPipelineLayout();
 	VkRenderPass*						getRenderPass();
 	VkDescriptorSetLayout				createDescriptorSetLayout();
 	 VkDescriptorSetLayout*				getDescriptorSetLayout();

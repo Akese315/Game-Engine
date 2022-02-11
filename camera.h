@@ -10,9 +10,10 @@ private:
 	glm::mat4 view;
 	glm::mat4 proj;
 
-	void createDescriptorSetLayout();
+	
 
 public:
-
+	camera();
 };
+
 

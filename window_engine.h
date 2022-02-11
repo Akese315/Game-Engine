@@ -13,6 +13,7 @@
 #include "vulkan_render.h"
 #include "CommandBuffer.h"
 #include "Vertex.h"
+#include "WindowEvent.h"
 
 
 class window_engine
@@ -39,13 +40,15 @@ private:
 	CommandBuffer* 				commandBufferObj;
 	Vertex*						VertexObj;
 	mainClass*					mainClassObj;
+	WindowEvent*				WindowEventObj;
 		
 	
 
 
 	
 
-
+	void createWindowEvent();
+	void destroyWindowEvent();
 	void swapChainDeInit();
 	void swapChainInit();
 	void CreateSurface();
