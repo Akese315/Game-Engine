@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="balle.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="CommandBuffer.h" />
     <ClInclude Include="Device.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="window_engine.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="balle.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="Device.cpp" />

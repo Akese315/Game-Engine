@@ -51,7 +51,6 @@ typedef struct createObjectInfo
 	std::vector<std::string> FILE_NAME_TEXTURE;
 	std::vector<uint32_t> indices;
 	std::vector<vertexStruc> vertices;
-	position pos;
 }createObjectInfo;
 
 

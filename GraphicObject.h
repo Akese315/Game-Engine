@@ -20,8 +20,10 @@ public:
 	vector<VkDescriptorSet>* getDescriptorset();
 	uint32_t getObjectNumber();
 	MaterialStruct* getMaterial();
-	vector<uint32_t> getIndices(StructBufferObject& indexBufferStruct);
-	vector<vertexStruc> getVertices(StructBufferObject& vertexBufferStruct);
+	void getIndices(vector<uint32_t>& ObjectIndices);
+	void getVertices(vector<vertexStruc>& ObjectVertices);
+	void createVertexBuffer(StructBufferObject& vertexBufferStruct, vector<vertexStruc>& ObjectVertices);
+	void createIndexBuffer(StructBufferObject& indexBufferStruct, vector<uint32_t>& ObjectIndices);
 	void updateBuffer(StructBufferObject vertexStructbuffer, StructBufferObject indexStructbuffer, vector<vertexStruc> vertexStruct, vector<uint32_t> indexStruct);
 	
 private:

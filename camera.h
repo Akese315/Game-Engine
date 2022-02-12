@@ -2,18 +2,25 @@
 #include <vulkan/include/vulkan.h>
 #include "Log.h"
 #include <glm/glm.hpp>
+#include "Vertex.h"
 
 class camera
 {
 private:
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 proj;
+	UniformBufferObject uniformBuffer;
 
-	
+	Vertex* vertexObj;
+	SwapChain* swapchainObj;
+	Device* deviceObj;
+
+	vector<StructBufferObject>* uniformBufferStruct;
 
 public:
-	camera();
+	camera(Vertex* vertexObj, SwapChain* swapchainObj, Device* deviceObj);
+	~camera();
+	void recreate();
+	void cleanUp();
+	void update(uint16_t imageIndex, float rotation, float time);
 };
 
 

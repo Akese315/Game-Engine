@@ -9,15 +9,18 @@
 #include "floor.h"
 #include "WindowEvent.h"
 #include <chrono>
+#include "camera.h"
+#include "balle.h"
 
 class mainClass
 {
 public:
-	mainClass(Device* deviceObj, Vertex* vertexObj, CommandBuffer* commandBufferObj, vulkan_render* renderer, WindowEvent* WindowEventObj);
+	mainClass(Device* deviceObj, Vertex* vertexObj, CommandBuffer* commandBufferObj, vulkan_render* renderer, WindowEvent* WindowEventObj, SwapChain* swapchainObj);
 	~mainClass();
 	
 	void recreateGraphicObject();
-	void update();
+	void cleanup();
+	void update(uint16_t imageIndex);
 
 private:
 	Device* deviceObj;
@@ -25,14 +28,19 @@ private:
 	CommandBuffer* commandBufferObj;
 	vulkan_render* renderer;
 	WindowEvent* WindowEventObj;
+	camera* cameraObj;
+	SwapChain* swapchainObj;
+
 	vector<object*> objectList;
 	vector<GraphicObject*> modelList;
 	vector<CommandInfo> commandInfoList;
 	GraphicObject* earthObj;
+	GraphicObject* earth_polygonObj;
 	GraphicObject* floorObj;
-	object* player1;
+	balle* player1;
+	balle* player2;
 	
-	std::chrono::high_resolution_clock::time_point time;
+	std::chrono::high_resolution_clock::time_point timeAtFrame;
 	std::chrono::high_resolution_clock::time_point LastTime;
 	uint16_t FPS;
 	int nb_second;
@@ -42,7 +50,7 @@ private:
 	void createModels();
 	void createObject();
 	void createCamera();
-	void showFPS(string ms);
+	void showFPS(string ms, float currentTime);
 	void updateMovement(float time);
 	std::chrono::high_resolution_clock::time_point getTime();
 	void start();

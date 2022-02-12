@@ -1,13 +1,17 @@
 #include "mainClass.h"
-mainClass::mainClass(Device* deviceObj, Vertex* vertexObj, CommandBuffer* commandBufferObj, vulkan_render* renderer, WindowEvent* WindowEventObj)
+#include <math.h>
+mainClass::mainClass(Device* deviceObj, Vertex* vertexObj, CommandBuffer* commandBufferObj, vulkan_render* renderer, WindowEvent* WindowEventObj, SwapChain* swapchainObj)
 {
 	this->deviceObj = deviceObj;
 	this->vertexObj = vertexObj;
 	this->commandBufferObj =commandBufferObj;
 	this->renderer = renderer;
 	this->WindowEventObj = WindowEventObj;
+	this->swapchainObj = swapchainObj;
+
 	FPS = 0;
 	nb_second = 1;
+	srand(time(NULL));
 	init();
 }
 
@@ -25,28 +29,17 @@ void mainClass::createModels()
 	createObjectInfo earth{};
 	earth.FILE_NAME_OBJ = "model/earth.obj";
 	earth.FILE_NAME_TEXTURE = textures;
-	earth.pos = { 0.2, 0.3, 0.4 };
-
 	earthObj = new GraphicObject(earth, deviceObj, vertexObj, renderer, commandBufferObj);
 	modelList.push_back(earthObj);
 
-	createObjectInfo floor{};
-	floor.vertices = {
-		{{-10.0f, -10.0f, -5.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-		{ {10.0f, -10.0f, -5.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-		{ {10.0f, 10.0f, -5.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-		{ {-10.0f, 10.0f, -5.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-	};
-	floor.indices = { 0, 1, 2, 2, 3, 0 };
-	floor.FILE_NAME_TEXTURE = { "textures/space.jpg" };
-	//floorObj = new GraphicObject(floor , deviceObj, vertexObj, renderer, commandBufferObj);
-	//modelList.push_back(floorObj);
 }
 
 void mainClass::createObject()
 {
-	player1 = new object("frizi", 1, earthObj);
+	player1 = new balle("frizi", 1, earthObj,5, glm::vec3(1.0f, -2.0f, 0.0f),glm::vec3(-2.0f,-3.0f,0.0f));
 	objectList.push_back(player1);
+	player2 = new balle("planet", 1,earthObj, 5, glm::vec3(2.0f, -3.0f, 0.0f), glm::vec3(1.0f, 2.0f, 0.0f));
+	objectList.push_back(player2);
 	//object* floor = new object("floor", 0, floorObj);
 	//objectList.push_back(floor);
 	
@@ -54,7 +47,7 @@ void mainClass::createObject()
 
 void mainClass::createCamera()
 {
-
+	cameraObj = new camera(vertexObj,swapchainObj,deviceObj);
 }
 
 void mainClass::start()
@@ -74,14 +67,44 @@ void mainClass::start()
 
 	commandBufferObj->commandBufferLoad(commandInfoList);
 }
-void mainClass::update()
-{
-	time = std::chrono::high_resolution_clock::now();
-	float timePerFrame = std::chrono::duration<float, chrono::seconds::period>(time - LastTime).count();	
+void mainClass::update(uint16_t imageIndex)
+{	
+	timeAtFrame = std::chrono::high_resolution_clock::now();
+	float timePerFrame = std::chrono::duration<float, chrono::seconds::period>(timeAtFrame - LastTime).count();
+	float currentTime = std::chrono::duration<float, chrono::seconds::period>(timeAtFrame - getTime()).count();
+	cameraObj->update(imageIndex, 0.0f, currentTime);
 	movementTime += timePerFrame; //en miliseconde
-	if (movementTime > 0.001)
+	if (movementTime > 0.01)
 	{
-		updateMovement(movementTime);
+		player1->move(player1->getVecteurDirecteur(), player1->getSpeed(), movementTime);
+		player1->checkPosition();
+		player2->move(player2->getVecteurDirecteur(), player2->getSpeed(), movementTime);
+		player2->checkPosition();
+
+		int distanceX = player1->getPosition().x - player2->getPosition().x;
+		int distanceY = player1->getPosition().y - player2->getPosition().y;
+		int norme = sqrt(pow(distanceX, 2) + pow(distanceX, 2));
+		if (norme == 1)
+		{
+			double pourcentage = (rand() % 100)/100;
+			if (player1->getMasse() < player2->getMasse())
+			{
+				player1->setEc(player2->getEc() * pourcentage);
+				player2->setEc(-player2->getEc() * pourcentage);
+			}
+			else
+			{
+				player2->setEc(player1->getEc() * pourcentage);
+				player1->setEc(-player1->getEc() * pourcentage);
+			}
+			int new_directionX = rand() % 4 + 1;
+			int new_directionY = rand() % 4 + 1;
+			glm::vec3 newDirection = glm::vec3(new_directionX, new_directionY, 0.0f);
+			player1->setNewDirection(newDirection);
+			newDirection = glm::vec3(-new_directionX, -new_directionY, 0.0f);
+			player2->setNewDirection(newDirection);
+		}
+		//updateMovement(movementTime);
 		movementTime = 0;
 	}
 	
@@ -90,16 +113,15 @@ void mainClass::update()
 	
 
 
-	LastTime = time;
+	LastTime = timeAtFrame;
 	string TPF = " TPF : " + to_string(timePerFrame * 1000) + "ms"; // en miliseconde
-	showFPS(TPF);	
+	showFPS(TPF, currentTime);	
 }
 
-void mainClass::showFPS(string ms)
+void mainClass::showFPS(string ms, float currentTime)
 {
 	FPS++;	
-	float newtime = std::chrono::duration<float, chrono::seconds::period>(time - getTime()).count();
-	if (newtime / nb_second >= 1)
+	if (currentTime / nb_second >= 1)
 	{
 		string fps = "FPS : " + to_string(FPS) + ms;
 		WindowEventObj->updateFPS(fps.c_str());
@@ -108,9 +130,14 @@ void mainClass::showFPS(string ms)
 		FPS = 0;
 	}
 }
+
+void mainClass::cleanup()
+{
+	cameraObj->cleanUp();
+}
 void mainClass::recreateGraphicObject()
 {
-
+	cameraObj->recreate();
 	for (GraphicObject* model : modelList)
 	{
 		model->update();
@@ -155,7 +182,7 @@ void mainClass::updateMovement(float time)
 
 		}
 
-		player1->move(vecteur_directeur, glm::vec1(1), 1, time);
+		//player1->move(vecteur_directeur, glm::vec1(1), 1, time);
 	}
 }
 

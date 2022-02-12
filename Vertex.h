@@ -46,16 +46,15 @@ public:
 	vector<uint16_t> getIndices();
 	static VkVertexInputBindingDescription getBindingDescription();
 	static array<VkVertexInputAttributeDescription, 2>	getAttributeDescriptions();
-	void createIndexBuffer(StructBufferObject& indexBufferStruct,const vector<uint32_t> indices);
-	void createVertexBuffer(StructBufferObject& vertexBufferStruct,const vector<vertexStruc> vertices);
 	void loadModel(const string MODEL_PATH, vector<uint32_t>& indices, vector<vertexStruc>& vertices);
 	void createTextureImage(const string TEXTURE_FILE_NAME, StructImageObject& imageBuffer);
 	void createDescriptorSets(vector<VkDescriptorSet>& descriptorSets, vector<StructImageObject> imageBuffers, VkDescriptorPool* descriptorPool);
 	void createDescriptorPool(VkDescriptorPool& descriptorPool);
+	vector<StructBufferObject>* createUniformBuffers();
+	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
 private:
 
-	uint32_t vertexCount;
 	Device* deviceObj;
 	SwapChain* swapchainObj;
 	CommandBuffer* CommandBufferObj;
@@ -67,17 +66,13 @@ private:
 	VkPipelineStageFlags destinationStage;
 	VkImageView depthImageView;
 
-	vector<VkBuffer> uniformBuffers;
-	vector<VkDeviceMemory> uniformBuffersMemory;
-	
-	
-	UniformBufferObject uniformBuffer;
+	vector<StructBufferObject> uniformBufferStruct;
 	StructImageObject depthBuffer;
 	
 	//déclaration de la structure bufferStruc du vertex et des index.
 
-	void createBuffers(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);	
-	void createUniformBuffers();	
+	
+		
 	
 	
 	void createTextureImageView(StructImageObject& imageStruct);

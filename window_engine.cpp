@@ -98,8 +98,7 @@ void window_engine::drawFrame()
 		vkWaitForFences(deviceObj->getDevice(), 1, &_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
 	}
 	_imagesInFlight[imageIndex] = _inFlightFences[_currentFrame];
-	VertexObj->updateUniformBuffer(imageIndex);
-	mainClassObj->update();
+	mainClassObj->update(imageIndex);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -226,6 +225,7 @@ VkExtent2D window_engine::getCurrentWindowSize()
 void window_engine::WindowResized()
 {
 	vkDeviceWaitIdle(deviceObj->getDevice());
+	mainClassObj->cleanup();
 	commandBufferObj->cleanUp();
 	VertexObj->cleanUp();
 	renderer->cleanUp();
@@ -276,7 +276,7 @@ void window_engine::PipelineDeInit()
 
 void window_engine::createMainClass()
 {
-	mainClassObj = new mainClass(deviceObj, VertexObj, commandBufferObj, renderer, WindowEventObj);
+	mainClassObj = new mainClass(deviceObj, VertexObj, commandBufferObj, renderer, WindowEventObj,swapchainObj);
 }
 
 void window_engine::destroyMainClass()

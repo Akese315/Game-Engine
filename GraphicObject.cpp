@@ -95,19 +95,60 @@ MaterialStruct* GraphicObject::getMaterial()
 {
 	return &currentMaterial;
 }
-vector<uint32_t> GraphicObject::getIndices(StructBufferObject& indexBufferStruct)
+void GraphicObject::getIndices(vector<uint32_t>& ObjectIndices)
 {
-	this->vertexObj->createIndexBuffer(indexBufferStruct, indices);
-	return indices;
-}
-vector<vertexStruc> GraphicObject::getVertices(StructBufferObject& vertexBufferStruct)
-{
-	
-	this->vertexObj->createVertexBuffer(vertexBufferStruct, vertices);
-	return vertices;
+	if (ObjectIndices.empty())
+	{
+		ObjectIndices = indices;
+	}
 	
 }
+void GraphicObject::getVertices(vector<vertexStruc>& ObjectVertices)
+{
+	if (ObjectVertices.empty())
+	{
+		ObjectVertices = vertices;
+	}
+	
+}
+void GraphicObject::createVertexBuffer(StructBufferObject& vertexBufferStruct, vector<vertexStruc>& ObjectVertices)
+{
+	VkDeviceSize bufferSize = sizeof(ObjectVertices[0]) * ObjectVertices.size();
 
+
+	vertexObj->createBuffers(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBufferStruct.stagingBuffer, vertexBufferStruct.stagingMemory);
+
+	vkMapMemory(deviceObj->getDevice(), vertexBufferStruct.stagingMemory, 0, bufferSize, 0, &vertexBufferStruct.data);
+	memcpy(vertexBufferStruct.data, ObjectVertices.data(), (size_t)bufferSize);
+	//vkUnmapMemory(deviceObj->getDevice(), vertexBufferStruct.stagingMemory);//à la fin uniquement
+
+	vertexObj->createBuffers(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBufferStruct.buffer,
+		vertexBufferStruct.memory);
+
+	commandBufferObj->copyBuffer(&vertexBufferStruct, bufferSize);
+}
+void GraphicObject::createIndexBuffer(StructBufferObject& indexBufferStruct, vector<uint32_t>& ObjectIndices)
+{
+	VkDeviceSize bufferSize = sizeof(ObjectIndices[0]) * ObjectIndices.size();
+
+	vertexObj->createBuffers(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexBufferStruct.stagingBuffer,
+		indexBufferStruct.stagingMemory);
+
+	vkMapMemory(deviceObj->getDevice(), indexBufferStruct.stagingMemory, 0, bufferSize, 0, &indexBufferStruct.data);
+	memcpy(indexBufferStruct.data, ObjectIndices.data(), (size_t)bufferSize);
+	//vkUnmapMemory(deviceObj->getDevice(), stagingBuffer.memory); on unMap uniquement à la fin
+
+	vertexObj->createBuffers(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+		VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBufferStruct.buffer,
+		indexBufferStruct.memory);
+	commandBufferObj->copyBuffer(&indexBufferStruct, bufferSize);
+}
 vector<VkDescriptorSet>* GraphicObject::getDescriptorset()
 {
 	return &descriptorSets;

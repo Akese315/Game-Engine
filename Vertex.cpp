@@ -75,95 +75,27 @@ void Vertex::createBuffers(VkDeviceSize size, VkBufferUsageFlags usage,VkMemoryP
 	
 }
 
-void Vertex::createVertexBuffer(StructBufferObject &vertexBufferStruct, const vector<vertexStruc> vertices)
-{	
-	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-
-	createBuffers(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-					VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBufferStruct.stagingBuffer, vertexBufferStruct.stagingMemory);
-	
-	vkMapMemory(deviceObj->getDevice(), vertexBufferStruct.stagingMemory, 0, bufferSize, 0, &vertexBufferStruct.data);
-	memcpy(vertexBufferStruct.data, vertices.data(), (size_t)bufferSize);
-	//vkUnmapMemory(deviceObj->getDevice(), vertexBufferStruct.stagingMemory);//à la fin uniquement
-
-	createBuffers(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBufferStruct.buffer,
-		vertexBufferStruct.memory);
-
-	CommandBufferObj->copyBuffer(&vertexBufferStruct, bufferSize);
-
-}
-
-
-void Vertex::createIndexBuffer(StructBufferObject& indexBufferStruct,const vector<uint32_t> indices)
-{
-	VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-
-	createBuffers(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexBufferStruct.stagingBuffer,
-		indexBufferStruct.stagingMemory);
-
-	vkMapMemory(deviceObj->getDevice(), indexBufferStruct.stagingMemory, 0, bufferSize, 0,	&indexBufferStruct.data);
-	memcpy(indexBufferStruct.data, indices.data(), (size_t)bufferSize);
-	//vkUnmapMemory(deviceObj->getDevice(), stagingBuffer.memory); on unMap uniquement à la fin
-	
-		createBuffers(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-			VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBufferStruct.buffer,
-			indexBufferStruct.memory);
-		CommandBufferObj->copyBuffer(&indexBufferStruct, bufferSize);
-}
-
-
-void Vertex::createUniformBuffers()
+vector<StructBufferObject>* Vertex::createUniformBuffers()
 {
 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 	
-		uniformBuffers.resize(swapchainObj->getSwapchainImage().size());
-		uniformBuffersMemory.resize(swapchainObj->getSwapchainImage().size());
+	uniformBufferStruct.resize(swapchainObj->getSwapchainImage().size());
 	
 		for (size_t i = 0; i < swapchainObj->getSwapchainImage().size(); i++) {
 			createBuffers(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i],
-			uniformBuffersMemory[i]);
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBufferStruct[i].buffer,
+				uniformBufferStruct[i].memory);
 		
 	}
+		return &uniformBufferStruct;
 
 }
 
 void Vertex::updateUniformBuffer(uint32_t currentImage)
 {
-	// à chaque fois que la fonction draw est exécutée, elle appelle cette fonction qui en fonction 
-		// du temps qui s'est écoulé depuis le début tourne tant le model sur un axe et une position donnée
-
-		static auto startTime =	chrono::high_resolution_clock::now();		
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, chrono::seconds::period>(currentTime - startTime).count();
-
-
-		uniformBuffer.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(-60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//le premier paramètre indique le model, le deuxième permet de faire une rotation de 90° en fonction du temps
-		// et le dernier permet d'indiquer l'axe de rotation
-		uniformBuffer.view = glm::lookAt(
-			glm::vec3(7.0f, 0.0f, 7.0f),// le premier paramètre : la position de l'oeil(caméra)
-			glm::vec3(0.0f,0.0f, 0.0f),//le deuxième : la position de la cible (ce que l'on regarde) inclinaison
-			glm::vec3(0.0f, 1.0f, 0.0f));//le dernier est l'axe de la hauteur
-		
-		
-		
-		uniformBuffer.proj = glm::perspective(glm::radians(60.0f),swapchainObj->getCurrentWindowSize().width / (float)swapchainObj->getCurrentWindowSize().height, 0.1f, 10.0f);
-		//donne la perspective ici de 45° et les deux autre paramètre sont le ration de la taille de l'écran (ici)
-		uniformBuffer.proj[1][1] *= -1;
-
-		//la bibliothèque glm a été crée pour OPENGL qui inverse le positif et le négatif donc il faut tout inverser 
-		void* data;
-		vkMapMemory(deviceObj->getDevice(), uniformBuffersMemory[currentImage], 0, sizeof(uniformBuffer), 0, &data);
-		memcpy(data, &uniformBuffer, sizeof(uniformBuffer));
-		vkUnmapMemory(deviceObj->getDevice(), uniformBuffersMemory[currentImage]);
+	
 }
 void Vertex::createDescriptorPool(VkDescriptorPool& descriptorPool)
 {	
@@ -215,7 +147,7 @@ void Vertex::createDescriptorSets(vector<VkDescriptorSet>& descriptorSets, vecto
 		//créé 3 descriptorSet
 		//et dans 1 descriptorSet il y a 2 descripteurs, un UBO et une texture
 		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = uniformBuffers[descriptorIndex];
+		bufferInfo.buffer = uniformBufferStruct[descriptorIndex].buffer;
 		bufferInfo.offset = 0;
 		bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -479,6 +411,12 @@ void Vertex::loadModel(const string MODEL_PATH, vector<uint32_t> &indices, vecto
 					attrib.vertices[3 * index.vertex_index + 1],
 					attrib.vertices[3 * index.vertex_index + 2]
 				};
+				vertex.color =
+				{
+						attrib.colors[3 * index.vertex_index + 0],
+						attrib.colors[3 * index.vertex_index + 0],
+						attrib.colors[3 * index.vertex_index + 0]
+				};				
 			}
 			
 			if (index.texcoord_index >= 0)
@@ -488,7 +426,6 @@ void Vertex::loadModel(const string MODEL_PATH, vector<uint32_t> &indices, vecto
 					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
 				};
 			}
-			vertex.color = { 1.0f, 1.0f, 1.0f };
 
 			if (uniqueVertices.count(vertex) == 0) {
 				
@@ -521,13 +458,9 @@ void Vertex::recreateVertexObj()
 }
 
 void Vertex::cleanUp()
-{
-	
+{	
 
-	for (size_t i = 0; i < swapchainObj->getSwapchainImage().size(); i++) {
-		vkDestroyBuffer(deviceObj->getDevice(), uniformBuffers[i], nullptr);
-		vkFreeMemory(deviceObj->getDevice(), uniformBuffersMemory[i], nullptr);
-	}
+	
 }
 
 Vertex::~Vertex()
