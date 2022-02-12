@@ -76,6 +76,10 @@ void mainClass::update(uint16_t imageIndex)
 	movementTime += timePerFrame; //en miliseconde
 	if (movementTime > 0.01)
 	{
+		if (movementTime > 0.02)
+		{
+			movementTime = 0;
+		}
 		player1->move(player1->getVecteurDirecteur(), player1->getSpeed(), movementTime);
 		player1->checkPosition();
 		player2->move(player2->getVecteurDirecteur(), player2->getSpeed(), movementTime);
